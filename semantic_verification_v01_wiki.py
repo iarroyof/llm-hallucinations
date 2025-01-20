@@ -224,6 +224,9 @@ if __name__ == "__main__":
     # -------------------------------------------------------------------------
     # A) Carga tu API key y crea el cliente de Cohere
     co = cohere.Client("lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")  # <--- Reemplaza con tu API Key real
+
+    # Imprimir la cantidad total de registros en el dataset
+    print(f"El dataset completo tiene {len(docs)} registros.")
     
     # B) Descarga el dataset de embeddings "Simple English Wikipedia"
     print("\nCargando dataset de Wikipedia (puede tardar)...")
