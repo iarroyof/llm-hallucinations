@@ -224,13 +224,13 @@ if __name__ == "__main__":
     # -------------------------------------------------------------------------
     # A) Carga tu API key y crea el cliente de Cohere
     co = cohere.Client("lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")  # <--- Reemplaza con tu API Key real
-
-    # Imprimir la cantidad total de registros en el dataset
-    print(f"El dataset completo tiene {len(docs)} registros.")
     
     # B) Descarga el dataset de embeddings "Simple English Wikipedia"
     print("\nCargando dataset de Wikipedia (puede tardar)...")
     docs = load_dataset("Cohere/wikipedia-22-12-simple-embeddings", split="train")
+
+    # Imprimir la cantidad total de registros en el dataset
+    print(f"El dataset completo tiene {len(docs)} registros.")
     
     # (Opcional) Por demo, limitamos a ~500 docs
     # Si quieres cargar todo, omite este paso (podría tardar y consumir mucha RAM)
