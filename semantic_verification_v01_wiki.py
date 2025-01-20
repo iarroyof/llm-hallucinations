@@ -223,7 +223,7 @@ if __name__ == "__main__":
     # 2) EJEMPLO: Búsqueda semántica con embeddings de Wikipedia
     # -------------------------------------------------------------------------
     # A) Carga tu API key y crea el cliente de Cohere
-    co = cohere.Client("TU_API_KEY_AQUI")  # <--- Reemplaza con tu API Key real
+    co = cohere.Client("lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")  # <--- Reemplaza con tu API Key real
     
     # B) Descarga el dataset de embeddings "Simple English Wikipedia"
     print("\nCargando dataset de Wikipedia (puede tardar)...")
