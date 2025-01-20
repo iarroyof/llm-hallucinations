@@ -164,8 +164,7 @@ def semantic_search(query: str, co_client, doc_embeddings: torch.Tensor, doc_tex
     query_emb = co_client.embed(texts=[query], model='multilingual-22-12').embeddings
     query_emb = torch.tensor(query_emb, dtype=torch.float32)  # [1, 768]
     
-    # 2) Producto punto
-    # doc_embeddings: [N, 768]  => transpuesto -> [768, N]
+    # 2) Producto punto (dot product)
     dot_scores = torch.matmul(query_emb, doc_embeddings.T)  # shape [1, N]
     
     # 3) Obtener topk
@@ -225,32 +224,30 @@ if __name__ == "__main__":
     # A) Carga tu API key y crea el cliente de Cohere
     co = cohere.Client("lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")  # <--- Reemplaza con tu API Key real
     
-    # B) Descarga el dataset de embeddings "Simple English Wikipedia"
-    print("\nCargando dataset de Wikipedia (puede tardar)...")
+    # B) Descarga el dataset "wikipedia-22-12-simple-embeddings" completo
+    print("\nCargando dataset de Wikipedia (puede tardar bastante si no está en caché)...")
     docs = load_dataset("Cohere/wikipedia-22-12-simple-embeddings", split="train")
-
-    # Imprimir la cantidad total de registros en el dataset
+    
+    # Imprimir la cantidad total de registros
     print(f"El dataset completo tiene {len(docs)} registros.")
     
-    # (Opcional) Por demo, limitamos a ~500 docs
-    # Si quieres cargar todo, omite este paso (podría tardar y consumir mucha RAM)
-    subset = docs.select(range(500))
-    
-    # C) Convertimos la columna 'emb' a tensores
-    print("Convirtiendo embeddings a PyTorch...")
-    embedding_list = [torch.tensor(e, dtype=torch.float32) for e in subset["emb"]]
+    # C) Convertimos la columna 'emb' a tensores (TODOS los registros)
+    print("\nConvirtiendo TODOS los embeddings a PyTorch (podría requerir varios GB de RAM)...")
+    embedding_list = [torch.tensor(e, dtype=torch.float32) for e in docs["emb"]]
     doc_embeddings = torch.stack(embedding_list)  # [N, 768]
     
     # Guardamos los textos para luego desplegarlos
-    doc_texts = subset["text"]
+    doc_texts = docs["text"]
     
     # D) Hacemos la búsqueda semántica
     query = "Who founded YouTube?"
+    print(f"\nRealizando semantic search para la query: '{query}' (top 3)...")
     results = semantic_search(query, co, doc_embeddings, doc_texts, k=3)
     
-    # Imprimir resultados
+    # E) Imprimir resultados
     print(f"\nTop resultados para la query: '{query}'\n")
     for rank, (score, txt) in enumerate(results, start=1):
         print(f"Rank {rank} | Score: {score:.4f}")
         print(f"Text snippet: {txt[:300]}...")
         print("----")
+    
