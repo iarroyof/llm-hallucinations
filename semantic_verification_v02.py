@@ -116,7 +116,7 @@ class SemanticVerifier:
         #results = []
         #for text in texts:
         print("entró al for y va con _create_verification_prompt")
-        prompt = self._create_verification_prompt(relations, text)
+        prompt = self._create_verification_prompt(relations, texts)
         
         print("prompt:",prompt)
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
