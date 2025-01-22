@@ -178,14 +178,15 @@ if __name__ == "__main__":
     
     # Verificar textos
     print("verifica textos")
-    results = verifier.verify_texts(relations, text_to_verify)
+    result = verifier.verify_texts(relations, text_to_verify)
     print("imprime resultados del verificador")
     
     # Mostrar resultados
-    for result in results:
-        print("\nOriginal Text:", result.original_text)
-        print("Marked Text:", result.marked_text)
-        print("Inconsistencies:")
-        for inc in result.inconsistencies:
-            print(f"  - {inc['text']}: {inc['explanation']}")
-        print(f"Confidence Score: {result.confidence_score:.2f}")
+    #for result in results:
+    #    print("\nOriginal Text:", result.original_text)
+    print("Marked text:")
+    print("Marked Text:", result.marked_text)
+    print("Inconsistencies found:")
+    for inc in result.inconsistencies:
+        print(f"  - {inc['text']}: {inc['explanation']}")
+    print(f"Confidence Score: {result.confidence_score:.2f}")
