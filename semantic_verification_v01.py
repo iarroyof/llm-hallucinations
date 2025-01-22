@@ -49,6 +49,8 @@ class SemanticVerifier:
     def _create_verification_prompt(self, relations: List[SemanticRelation], text: str) -> str:
         """Create the verification prompt for the model."""
         relations_text = self._format_relations(relations)
+        print("relations:", relations_text)
+        print("tipo de relations:", type(relations_text))
         prompt = f"""
           Task: Analyze the following text for semantic inconsistencies using the provided semantic relations.
 
@@ -120,9 +122,11 @@ class SemanticVerifier:
         """
         # Create the prompt
         prompt = self._create_verification_prompt(relations, text)
+        print("prompt:",prompt)
         
         # Tokenize and generate
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        print("inputs:",inputs)
         
         with torch.no_grad():
             outputs = self.model.generate(

@@ -118,8 +118,10 @@ class SemanticVerifier:
             print("entró al for y va con _create_verification_prompt")
             prompt = self._create_verification_prompt(relations, text)
             print("regresó prompt desde _create_verification_prompt")
+            print("prompt:",prompt)
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
             print("hizo el tokenizer")
+            print("inputs:",inputs)
             
             with torch.no_grad():
                 outputs = self.model.generate(
