@@ -3,7 +3,7 @@ from spacy.language import Language
 from spacy.tokens import Doc
 
 
-class ExtractorRelaciones:
+class ExtractorDeRelaciones:
     def __init__(self, model="en_core_web_md"):
         # Inicializa spaCy y configura el pipeline
         self.nlp = spacy.load(model)
