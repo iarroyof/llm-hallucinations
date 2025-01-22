@@ -3,7 +3,7 @@ from spacy.language import Language
 from spacy.tokens import Doc
 
 
-class ExtractorDeRelaciones:
+class RelationExtractor:
     def __init__(self, model="en_core_web_md"):
         # Inicializa spaCy y configura el pipeline
         self.nlp = spacy.load(model)
@@ -56,6 +56,6 @@ if __name__ == "__main__":
         "Pedro sent an email to Ana.",
     ]
 
-    extractor = ExtractorRelaciones()
+    extractor = RelationExtractor()
     resultados = extractor.extraer_relaciones(textos)
     print("Relaciones extraídas:", resultados)
