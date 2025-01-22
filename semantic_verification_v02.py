@@ -113,33 +113,34 @@ class SemanticVerifier:
         Returns:
             List of VerificationResult for each input text
         """
-        results = []
-        for text in texts:
-            print("entró al for y va con _create_verification_prompt")
-            prompt = self._create_verification_prompt(relations, text)
-            print("regresó prompt desde _create_verification_prompt")
-            print("prompt:",prompt)
-            inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
-            print("hizo el tokenizer")
-            print("inputs:",inputs)
-            
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    inputs.input_ids,
-                    max_length=4096,
-                    temperature=0.1,
-                    top_p=0.95,
-                    do_sample=True,
-                    num_return_sequences=1
-                )
-            print("aplica metodo decode de tokenizer")
-            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            print("aplica el modelo")
-            result = self._parse_model_output(response, text)
-            print("sale del modelo")
-            results.append(result)
+        #results = []
+        #for text in texts:
+        print("entró al for y va con _create_verification_prompt")
+        prompt = self._create_verification_prompt(relations, text)
         
-        return results
+        print("prompt:",prompt)
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        print("inputs:",inputs)
+        print("type inputs:",type(inputs))
+        print("len inputs:", len(inputs))
+        
+        with torch.no_grad():
+            outputs = self.model.generate(
+                inputs.input_ids,
+                max_length=4096,
+                temperature=0.1,
+                top_p=0.95,
+                do_sample=True,
+                num_return_sequences=1
+            )
+        print("aplica metodo decode de tokenizer")
+        response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        print("aplica el modelo")
+        result = self._parse_model_output(response, text)
+        print("sale del modelo")
+        #results.append(result)
+        
+        return result
     
 if __name__ == "__main__":
     # Relaciones semánticas de ejemplo
