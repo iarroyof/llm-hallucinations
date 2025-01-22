@@ -138,7 +138,7 @@ class SemanticVerifier:
         print("aplica metodo decode de tokenizer")
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         print("aplica el modelo")
-        result = self._parse_model_output(response, text)
+        result = self._parse_model_output(response, texts)
         print("sale del modelo")
         #results.append(result)
         
