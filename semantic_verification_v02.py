@@ -39,11 +39,13 @@ class SemanticVerifier:
         formatted = "Semantic Relations:\n"
         for i, rel in enumerate(relations, 1):
             formatted += f"{i}. {rel.subject} {rel.predicate} {rel.object} (confidence: {rel.confidence:.2f})\n"
+        
         return formatted
     
-    def _create_verification_prompt(self, relations: List[SemanticRelation], text: str) -> str:
+    def _create_verification_prompt(self, relations, text: str) -> str:
         """Create the verification prompt for the model."""
-        relations_text = self._format_relations(relations)
+        #relations_text = self._format_relations(relations)
+        relations_text = "1.".join(relations)
         prompt = f"""
           Task: Analyze the following text for semantic inconsistencies using the provided semantic relations.
 
@@ -99,7 +101,7 @@ class SemanticVerifier:
                 confidence_score=0.0
             )
     
-    def verify_texts(self, relations: List[SemanticRelation], texts: List[str]) -> List[VerificationResult]:
+    def verify_texts(self, relations, texts: List[str]) -> List[VerificationResult]:
         """
         Verify a list of texts against semantic relations and identify inconsistencies.
         
@@ -133,6 +135,7 @@ class SemanticVerifier:
     
 if __name__ == "__main__":
     # Relaciones semánticas de ejemplo
+    """""
     relations = [
         SemanticRelation(
             subject="Earth",
@@ -148,14 +151,16 @@ if __name__ == "__main__":
             confidence=0.98,
             source_doc="doc1"
         )
-    ]
-    
+    ]"""
+    ext_rel_resp = (['I write letter', 'They spend money', 'Juan eats apple', 'We saved money', 'Pedro sent email'], ['I write a romantic letter.', 'They spend much money', 'Juan eats a delicious apple.', 'We saved much money in the bank', 'Pedro sent an email to Ana.'])
+    relations = ext_rel_resp[0][0]
+    text_to_verify = ext_rel_resp[1][0]
     # Textos a verificar
-    text_to_verify = [
-        """The Earth, which has a diameter of about 10,000 kilometers, 
-        completes one orbit around the Sun every 365.25 days.""",
-        """Mars, which is smaller than Earth, orbits the Sun every 687 days."""
-    ]
+    #text_to_verify = [
+    #    """The Earth, which has a diameter of about 10,000 kilometers, 
+    #    completes one orbit around the Sun every 365.25 days.""",
+    #    """Mars, which is smaller than Earth, orbits the Sun every 687 days."""
+    #]
     
     # Inicializar el verificador
     verifier = SemanticVerifier(device="cuda" if torch.cuda.is_available() else "cpu")
