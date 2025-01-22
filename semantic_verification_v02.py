@@ -45,8 +45,10 @@ class SemanticVerifier:
     def _create_verification_prompt(self, relations, text) -> str:
         """Create the verification prompt for the model."""
         #relations_text = self._format_relations(relations)
+        relations_text = relations
+        print("relations:",relations)
+        print("type relations:",type(relations))
         print("entró a _create_verification_prompt")
-        relations_text = "1.".join(relations)
         prompt = f"""
           Task: Analyze the following text for semantic inconsistencies using the provided semantic relations.
 
