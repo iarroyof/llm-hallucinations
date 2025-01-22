@@ -153,8 +153,8 @@ if __name__ == "__main__":
         )
     ]"""
     ext_rel_resp = (['I write letter', 'They spend money', 'Juan eats apple', 'We saved money', 'Pedro sent email'], ['I write a romantic letter.', 'They spend much money', 'Juan eats a delicious apple.', 'We saved much money in the bank', 'Pedro sent an email to Ana.'])
-    relations = ext_rel_resp[0][0]
-    text_to_verify = ext_rel_resp[1][0]
+    relations = (ext_rel_resp[0][0])
+    text_to_verify = (ext_rel_resp[1][0])
     # Textos a verificar
     #text_to_verify = [
     #    """The Earth, which has a diameter of about 10,000 kilometers, 
