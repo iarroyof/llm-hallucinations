@@ -42,9 +42,10 @@ class SemanticVerifier:
         
         return formatted
     
-    def _create_verification_prompt(self, relations, text: str) -> str:
+    def _create_verification_prompt(self, relations, text) -> str:
         """Create the verification prompt for the model."""
         #relations_text = self._format_relations(relations)
+        print("entró a _create_verification_prompt")
         relations_text = "1.".join(relations)
         prompt = f"""
           Task: Analyze the following text for semantic inconsistencies using the provided semantic relations.
@@ -101,7 +102,7 @@ class SemanticVerifier:
                 confidence_score=0.0
             )
     
-    def verify_texts(self, relations, texts: List[str]) -> List[VerificationResult]:
+    def verify_texts(self, relations, texts) -> List[VerificationResult]:
         """
         Verify a list of texts against semantic relations and identify inconsistencies.
         
@@ -114,8 +115,11 @@ class SemanticVerifier:
         """
         results = []
         for text in texts:
+            print("entró al for y va con _create_verification_prompt")
             prompt = self._create_verification_prompt(relations, text)
+            print("regresó prompt desde _create_verification_prompt")
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+            print("hizo el tokenizer")
             
             with torch.no_grad():
                 outputs = self.model.generate(
@@ -126,9 +130,11 @@ class SemanticVerifier:
                     do_sample=True,
                     num_return_sequences=1
                 )
-            
+            print("aplica metodo decode de tokenizer")
             response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            print("aplica el modelo")
             result = self._parse_model_output(response, text)
+            print("sale del modelo")
             results.append(result)
         
         return results
@@ -166,7 +172,9 @@ if __name__ == "__main__":
     verifier = SemanticVerifier(device="cuda" if torch.cuda.is_available() else "cpu")
     
     # Verificar textos
+    print("verifica textos")
     results = verifier.verify_texts(relations, text_to_verify)
+    print("imprime resultados del verificador")
     
     # Mostrar resultados
     for result in results:
