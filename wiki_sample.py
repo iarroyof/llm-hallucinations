@@ -2,7 +2,7 @@ import wikipediaapi
 
 class WikipediaBatchGenerator:
     def __init__(self):
-        self.wiki_wiki = wikipediaapi.Wikipedia('en')
+        self.wiki_wiki = wikipediaapi.Wikipedia('en', user_agent="IarroyoF/0.0 (https://iarroyof.github.io/; iaf@gs.utm.mx) generic-package/0.0")
         self.themes = self._generate_themes()  # Generate at least 100 themes
         self.batches = self._generate_batches()
 
