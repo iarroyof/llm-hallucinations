@@ -27,7 +27,7 @@ class JSONLIterator:
 file_path = 'path/to/your/file.jsonl'
 keys = ['model_input', 'model_output_text']
 
-jsonl_iterator = JSONLIterator(file_path, keys)
+jsonl_iterator = JSONLIterator(file_path, keys, 10)
 
 # Iterate over the file and process each item
 for model_input, model_output_text in jsonl_iterator:
