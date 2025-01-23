@@ -24,7 +24,7 @@ class JSONLIterator:
                     yield tuple(data[key] for key in self.keys)
 
 # Example usage
-file_path = 'path/to/your/file.jsonl'
+"""file_path = 'path/to/your/file.jsonl'
 keys = ['model_input', 'model_output_text']
 
 jsonl_iterator = JSONLIterator(file_path, keys, 10)
@@ -34,3 +34,4 @@ for model_input, model_output_text in jsonl_iterator:
     print(f"Input: {model_input}")
     print(f"Output: {model_output_text}")
     print("-" * 40)
+"""
