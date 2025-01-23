@@ -16,11 +16,10 @@ def extract_relations(answers, n_qs_semantic_search_results):
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = ['model_input', 'model_output_text']
-n_qs = 100
 # Simulate a list of documents from n questions (n_qs)
 generator = WikipediaBatchGenerator()
 n_qs_semantic_search_results = generator.get_batches()
-n_qs = n_qs_semantic_search_results.len
+n_qs = generator.len
 questions_answers = JSONLIterator(file_path, keys, n_qs)
 
 # Iterate over the file and process each item
