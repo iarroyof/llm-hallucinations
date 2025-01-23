@@ -21,8 +21,7 @@ generator = WikipediaBatchGenerator()
 n_qs_semantic_search_results = generator.get_batches()
 n_qs = generator.len
 questions_answers = JSONLIterator(file_path, keys, n_qs)
-st()
 # Iterate over the file and process each item
 answers = [ans for _, ans in questions_answers] 
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_qs_semantic_search_results)
-
+st()
