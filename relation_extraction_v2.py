@@ -3,12 +3,13 @@ from spacy.matcher import Matcher
 
 class RelationExtractor:
     def __init__(self):
-        self.nlp = spacy.load("en_core_web_sm")
+        # Load the transformer-based model
+        self.nlp = spacy.load("en_core_web_trf")
         self.matcher = Matcher(self.nlp.vocab)
         self._add_patterns()
 
     def _add_patterns(self):
-        # Define more flexible patterns for relation extraction
+        # Define patterns for verb-based relations
         patterns = [
             [{"POS": "VERB"}, {"POS": "PART", "OP": "*"}, {"POS": "ADV", "OP": "*"}],
             [{"POS": "VERB"}, {"POS": "ADP", "OP": "*"}, {"POS": "DET", "OP": "*"},
@@ -20,42 +21,32 @@ class RelationExtractor:
         for pattern in patterns:
             self.matcher.add("SYNTACTIC_CONSTRAINT", [pattern])
 
-    def _merge_overlapping_consecutive_spans(self, spans):
-        if not spans:
-            return []
-        spans = sorted(spans, key=lambda x: x.start)
-        merged_spans = []
-        current_span = spans[0]
-        for span in spans[1:]:
-            if span.start <= current_span.end:
-                current_span = spacy.tokens.Span(
-                    current_span.doc, current_span.start, span.end, label=current_span.label
-                )
-            else:
-                merged_spans.append(current_span)
-                current_span = span
-        merged_spans.append(current_span)
-        return merged_spans
-
     def _extract_relations_from_sentence(self, sentence):
         doc = self.nlp(sentence)
-        matches = self.matcher(doc)
-        spans = [doc[start:end] for _, start, end in matches]
-        merged_spans = self._merge_overlapping_consecutive_spans(spans)
         relations = []
-        for span in merged_spans:
-            # Find the closest noun before and after the span
-            left_noun = None
-            right_noun = None
-            for token in doc[:span.start]:
-                if token.pos_ in ["NOUN", "PROPN"]:
-                    left_noun = token
-            for token in doc[span.end:]:
-                if token.pos_ in ["NOUN", "PROPN"]:
-                    right_noun = token
-                    break
-            if left_noun and right_noun:
-                relations.append((left_noun.text, span.text, right_noun.text))
+
+        # Extract verb-based relations using dependency parsing
+        for token in doc:
+            if token.pos_ == "VERB":
+                subject = None
+                object_ = None
+                # Find the subject of the verb
+                for child in token.children:
+                    if child.dep_ in ["nsubj", "nsubjpass"]:
+                        subject = child.text
+                    # Find the object of the verb
+                    elif child.dep_ in ["dobj", "attr", "prep", "pobj"]:
+                        object_ = child.text
+                if subject and object_:
+                    relations.append((subject, token.text, object_))
+
+        # Extract additional relations for dates, locations, and other entities
+        for ent in doc.ents:
+            if ent.label_ in ["DATE", "GPE", "LOC", "ORG", "PERSON"]:
+                for token in doc:
+                    if token.pos_ == "VERB" and token.text in ["born", "died", "located", "found", "created"]:
+                        relations.append((token.head.text, token.text, ent.text))
+
         return relations
 
     def extract_relations(self, texts):
