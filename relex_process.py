@@ -9,7 +9,7 @@ def extract_relations(answers, n_qs_semantic_search_results):
     fanswer_relations = []
     for wiki_docs_from_question, answer in zip(n_qs_semantic_search_results, answers):
         wiki_docs_fquestion_relations.append(extractor.extraer_relaciones(wiki_docs_from_question))
-        fanswer_relations.append(extractor.extraer_relaciones(answer))
+        fanswer_relations.append(extractor.extraer_relaciones([answer]))
 
     return wiki_docs_fquestion_relations, fanswer_relations
         
@@ -21,8 +21,8 @@ generator = WikipediaBatchGenerator()
 n_qs_semantic_search_results = generator.get_batches()
 n_qs = generator.len
 questions_answers = JSONLIterator(file_path, keys, n_qs)
-
+st()
 # Iterate over the file and process each item
 answers = [ans for _, ans in questions_answers] 
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_qs_semantic_search_results)
-st()
+
