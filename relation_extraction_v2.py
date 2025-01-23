@@ -34,9 +34,14 @@ class RelationExtractor:
                 for child in token.children:
                     if child.dep_ in ["nsubj", "nsubjpass"]:
                         subject = child.text
-                    # Find the object of the verb
-                    elif child.dep_ in ["dobj", "attr", "prep", "pobj"]:
+                    # Find the object of the verb (excluding prepositions)
+                    elif child.dep_ in ["dobj", "attr"]:
                         object_ = child.text
+                    elif child.dep_ == "prep":
+                        # Handle prepositional phrases
+                        for prep_child in child.children:
+                            if prep_child.dep_ == "pobj":
+                                object_ = prep_child.text
                 if subject and object_:
                     relations.append((subject, token.text, object_))
 
@@ -45,7 +50,10 @@ class RelationExtractor:
             if ent.label_ in ["DATE", "GPE", "LOC", "ORG", "PERSON"]:
                 for token in doc:
                     if token.pos_ == "VERB" and token.text in ["born", "died", "located", "found", "created"]:
-                        relations.append((token.head.text, token.text, ent.text))
+                        # Ensure the subject is valid
+                        subject = token.head.text if token.head.pos_ in ["NOUN", "PROPN"] else None
+                        if subject:
+                            relations.append((subject, token.text, ent.text))
 
         return relations
 
