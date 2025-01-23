@@ -3,8 +3,7 @@ from spacy.matcher import Matcher
 
 class RelationExtractor:
     def __init__(self):
-        # Load the transformer-based model
-        self.nlp = spacy.load("en_core_web_trf")
+        self.nlp = spacy.load("en_core_web_sm")
         self.matcher = Matcher(self.nlp.vocab)
         self._add_patterns()
 
@@ -34,26 +33,18 @@ class RelationExtractor:
                 for child in token.children:
                     if child.dep_ in ["nsubj", "nsubjpass"]:
                         subject = child.text
-                    # Find the object of the verb (excluding prepositions)
-                    elif child.dep_ in ["dobj", "attr"]:
+                    # Find the object of the verb
+                    elif child.dep_ in ["dobj", "attr", "prep", "pobj"]:
                         object_ = child.text
-                    elif child.dep_ == "prep":
-                        # Handle prepositional phrases
-                        for prep_child in child.children:
-                            if prep_child.dep_ == "pobj":
-                                object_ = prep_child.text
                 if subject and object_:
                     relations.append((subject, token.text, object_))
 
-        # Extract additional relations for dates, locations, and other entities
+        # Extract additional relations for dates and locations
         for ent in doc.ents:
-            if ent.label_ in ["DATE", "GPE", "LOC", "ORG", "PERSON"]:
+            if ent.label_ in ["DATE", "GPE", "LOC"]:
                 for token in doc:
-                    if token.pos_ == "VERB" and token.text in ["born", "died", "located", "found", "created"]:
-                        # Ensure the subject is valid
-                        subject = token.head.text if token.head.pos_ in ["NOUN", "PROPN"] else None
-                        if subject:
-                            relations.append((subject, token.text, ent.text))
+                    if token.pos_ == "VERB" and token.text in ["born", "died", "located"]:
+                        relations.append((token.head.text, token.text, ent.text))
 
         return relations
 
