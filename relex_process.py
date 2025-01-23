@@ -1,6 +1,6 @@
-from .relation_extraction import RelationExtractor
-from .json_utils import JSONLIterator
-from .wiki_sample import WikipediaBatchGenerator
+from relation_extraction import RelationExtractor
+from json_utils import JSONLIterator
+from wiki_sample import WikipediaBatchGenerator
 from pdb import set_trace as st
 
 def extract_relations(answers, n_qs_semantic_search_results):
