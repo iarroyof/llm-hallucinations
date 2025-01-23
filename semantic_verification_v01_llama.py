@@ -24,9 +24,9 @@ class VerificationResult:
     confidence_score: float
 
 class SemanticVerifier:
-    def __init__(self, model_name: str = "meta-llama/llama-3.2-3B-Instruct", device: str = "cuda"):
+    def __init__(self, model_name: str = "meta-llama/llama-3.2-1B-Instruct", device: str = "cuda"):
         """
-        Initialize the semantic verifier with llama-3.2-3B-Instruct model.
+        Initialize the semantic verifier with llama-3.2-1B-Instruct model.
         
         Args:
             model_name: HuggingFace model identifier
