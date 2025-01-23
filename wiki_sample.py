@@ -52,6 +52,7 @@ class WikipediaBatchGenerator:
 
     def get_batches(self):
         """Return the list of batches."""
+        self.len = len(self.batches)
         return self.batches
 
 
