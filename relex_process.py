@@ -1,10 +1,9 @@
-from relation_extraction import RelationExtractor
+from relation_extraction_v2 import RelationExtractor
 from json_utils import JSONLIterator
 from wiki_sample import WikipediaBatchGenerator
 from pdb import set_trace as st
 
-def extract_relations(answers, n_qs_semantic_search_results):
-    extractor = RelationExtractor()
+def extract_relations(answers, n_qs_semantic_search_results, extractor):
     wiki_docs_fquestion_relations = []
     fanswer_relations = []
     for wiki_docs_from_question, answer in zip(n_qs_semantic_search_results, answers):
@@ -21,7 +20,8 @@ generator = WikipediaBatchGenerator()
 n_qs_semantic_search_results = generator.get_batches()
 n_qs = generator.len
 questions_answers = JSONLIterator(file_path, keys, n_qs)
+extractor = RelationExtractor()
 # Iterate over the file and process each item
 answers = [ans for _, ans in questions_answers] 
-wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_qs_semantic_search_results)
+wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_qs_semantic_search_results, extractor)
 st()
