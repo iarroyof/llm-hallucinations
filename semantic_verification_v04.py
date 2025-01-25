@@ -46,22 +46,27 @@ class SemanticVerifier:
             formatted += f"{i}. {rel.subject} {rel.predicate} {rel.object} (confidence: {rel.confidence:.2f})\n"
         return formatted
     
-    def _create_verification_prompt(self, relations: Any, text: str, text_form_relations=True) -> str:
+    def _create_verification_prompt(self, relations: Any, text: str, text_rels:Any=None, text_form_relations=True) -> str:
         """Create the verification prompt for the model."""
         if not text_form_relations:
             relations_text = self._format_relations(relations)
+            ans_relations_text = self._format_relations(text_rels)
         else:
             relations_text = text_form_relations
-          
+            ans_relations_text = text_rels
+            
         print("relations:", relations_text)
         print("tipo de relations:", type(relations_text))
         prompt = f"""
-          Task: Analyze the following text for semantic inconsistencies using the provided semantic relations.
+          Task: Analyze the following text for semantic inconsistencies using the provided semantic relations extracted from documental sources:
 
           {relations_text}
 
           Text to verify:
           {text}
+
+          Its relations:
+          {ans_relations_text}
 
           Instructions:
           1. Compare the text against the semantic relations
