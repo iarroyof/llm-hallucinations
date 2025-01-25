@@ -24,7 +24,7 @@ wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_
 verifier = SemanticVerifier(device="cuda" if torch.cuda.is_available() else "cpu")
     
     # Run verification
-result = verifier.verify_text(relations_from_q, relations_a, answer)
+result = verifier.verify_text(wiki_docs_fquestion_relations[0], fanswer_relations[0], answer[0])
     
     # Print results
 print("Marked text:")
