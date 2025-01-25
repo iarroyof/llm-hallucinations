@@ -1,4 +1,5 @@
 from relation_extraction_v2 import RelationExtractor, extract_relations
+from semantic_verifier_v04 import SemanticVerifier
 from json_utils import JSONLIterator
 from wiki_sample import WikipediaBatchGenerator
 from pdb import set_trace as st
@@ -19,4 +20,17 @@ extractor = RelationExtractor()
 answers = [ans for _, ans in questions_answers] 
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_qs_semantic_search_results, extractor)
 # Take wiki_docs_fquestion_relations and fanswer_relations and give them to the semantic verifier.
+    # Initialize verifier
+verifier = SemanticVerifier(device="cuda" if torch.cuda.is_available() else "cpu")
+    
+    # Run verification
+result = verifier.verify_text(relations_from_q, relations_a, answer)
+    
+    # Print results
+print("Marked text:")
+print(result.marked_text)
+print("\nInconsistencies found:")
+for inc in result.inconsistencies:
+    print(f"- {inc['text']}: {inc['explanation']}")
+    print(f"\nConfidence score: {result.confidence_score:.2f}")
 st()
