@@ -1,5 +1,5 @@
 from relation_extraction_v2 import RelationExtractor, extract_relations
-from semantic_verifier_v04 import SemanticVerifier
+from semantic_verification_v04 import SemanticVerifier
 from json_utils import JSONLIterator
 from wiki_sample import WikipediaBatchGenerator
 from pdb import set_trace as st
