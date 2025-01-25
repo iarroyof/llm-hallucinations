@@ -58,6 +58,25 @@ class RelationExtractor:
             results[text] = relations
         return results
 
+def extract_relations(answers, n_qs_semantic_search_results, extractor):
+    """
+    results = extractor.extract_relations(texts)
+    for text, relations in results.items():
+        print(f"Text: {text}")
+        for relation in relations:
+            print(f"  Relation: {relation}")
+        print()
+    """
+    wiki_docs_fquestion_relations = []
+    fanswer_relations = []
+    for wiki_docs_from_question, answer in zip(n_qs_semantic_search_results, answers):
+        relations = [rs for _, rs in extractor.extract_relations(wiki_docs_from_question).items()]
+        wiki_docs_fquestion_relations.append(relations)
+        relations = [rs for _, rs in extractor.extract_relations([answer]).items()]
+        fanswer_relations.append(relations)
+
+    return wiki_docs_fquestion_relations, fanswer_relations
+
 # Example usage
 if __name__ == "__main__":
     texts = [
