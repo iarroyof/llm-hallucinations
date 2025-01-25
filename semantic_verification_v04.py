@@ -39,7 +39,7 @@ class SemanticVerifier:
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32
         ).to(self.device)
         
-    def _format_relations(self, relations: ist[SemanticRelation]) -> str:
+    def _format_relations(self, relations: List[SemanticRelation]) -> str:
         """Format semantic relations into a string for the prompt."""
         formatted = "Semantic Relations:\n"
         for i, rel in enumerate(relations, 1):
@@ -118,7 +118,7 @@ class SemanticVerifier:
                 confidence_score=0.0
             )
     
-    def verify_text(self, relations: List[SemanticRelation], text: str) -> VerificationResult:
+    def verify_text(self, relations: Any, relations_ans:Any, text: str) -> VerificationResult:
         """
         Verify text against semantic relations and identify inconsistencies.
         
@@ -129,8 +129,8 @@ class SemanticVerifier:
         Returns:
             VerificationResult containing marked text and identified inconsistencies
         """
-        # Create the prompt
-        prompt = self._create_verification_prompt(relations, text)
+        # Create the prompt relations: Any, text: str, text_rels:Any=None, text_form_relations=True
+        prompt = self._create_verification_prompt(relations, relations_ans, text)
         
         # Tokenize and generate
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
