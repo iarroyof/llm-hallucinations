@@ -1,6 +1,6 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 import logging
