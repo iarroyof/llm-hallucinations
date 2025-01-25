@@ -3,6 +3,7 @@ from semantic_verification_v04 import SemanticVerifier
 from json_utils import JSONLIterator
 from wiki_sample import WikipediaBatchGenerator
 from pdb import set_trace as st
+import torch
         
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
