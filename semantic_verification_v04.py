@@ -60,6 +60,49 @@ class SemanticVerifier:
         else:
             relations_text = relations
             ans_relations_text = text_rels
+    
+        prompt = f"""
+            Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts.
+            
+            Input:
+            1. Text to check: {text}
+            2. Known facts (as relations): {relations_text}
+            3. Relations found in text: {ans_relations_text}
+            
+            Instructions:
+            1. Compare the text against the known facts
+            2. Find any parts that are:
+               - Factually incorrect
+               - Logically contradicting
+               - Making claims without evidence
+            3. For each word in the text, assign a probability (0-1) of it being part of a mistake
+            4. Mark the start and end positions of incorrect parts (only where probability > 0.5)
+            5. Add XML tags around the incorrect parts
+            6. Explain why these parts are incorrect
+            
+            Expected Output Format:
+            {{
+                "soft_labels": [
+                    {{"start": number, "end": number, "prob": number}},
+                    ...
+                ],
+                "hard_labels": [[start, end], ...],
+                "marked_text": "text with <inconsistent>tags</inconsistent>",
+                "explanation": "Brief explanation of each error"
+            }}
+            
+            Please analyze the text and provide the output in the format shown above.
+            """
+        return prompt
+
+        def create_verification_prompt(self, relations: Any, text: str, text_rels:Any=None, text_form_relations=True) -> str:
+        """Create the verification prompt for the model."""
+        if not text_form_relations:
+            relations_text = self._format_relations(relations)
+            ans_relations_text = self._format_relations(text_rels)
+        else:
+            relations_text = relations
+            ans_relations_text = text_rels
             
         #print("relations:", relations_text)
         #print("tipo de relations:", type(relations_text))
@@ -119,8 +162,11 @@ class SemanticVerifier:
             Response:
             """
         return prompt
-    
-    def _parse_model_output(self, output: str, original_text: str=None) -> VerificationResult:
+
+    def _parse_model_output(self, output: str, original_text: str=None) -> str:
+        return output, original_text
+        
+    def parse_model_output(self, output: str, original_text: str=None) -> VerificationResult:
         # Define regex patterns to match the required sections
         try:
             inconsistency_pattern = r'inconsistency_identification:\s*(\{.*?\})'
