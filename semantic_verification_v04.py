@@ -58,7 +58,7 @@ class SemanticVerifier:
             relations_text = self._format_relations(relations)
             ans_relations_text = self._format_relations(text_rels)
         else:
-            relations_text = text_form_relations
+            relations_text = relations
             ans_relations_text = text_rels
             
         #print("relations:", relations_text)
@@ -94,7 +94,7 @@ class SemanticVerifier:
             Relations extracted from ground truth sources:
             {relations_text}
             
-            Semantic relations extracted from the text to verify:
+            Relations extracted from the text to verify:
             {ans_relations_text}
             
             Response:
