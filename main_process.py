@@ -33,11 +33,11 @@ results = []
 for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relations,
                                                         fanswer_relations,
                                                         answers):
-        result, explanation = verifier.verify_text(wiki_relations, answer_relations, answer)    
-    # Print results
-        print("Dictionary:")
-        print(result)
-        print("\nExplanation:")
-        print(explanation)
-        results.append(result)
-        st()
+    result, explanation = verifier.verify_text(wiki_relations, answer_relations, answer)    
+    # Print result
+    print("Dictionary:")
+    print(result)
+    print("\nExplanation:")
+    print(explanation)
+    results.append(result)
+    st()
