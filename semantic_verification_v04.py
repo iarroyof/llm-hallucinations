@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from huggingface_hub import login
 import logging
+import re
 
 @dataclass
 class SemanticRelation:
@@ -60,8 +61,8 @@ class SemanticVerifier:
             relations_text = text_form_relations
             ans_relations_text = text_rels
             
-        print("relations:", relations_text)
-        print("tipo de relations:", type(relations_text))
+        #print("relations:", relations_text)
+        #print("tipo de relations:", type(relations_text))
         prompt = f"""
             Task:
               Analyze the following text ("text to verify") for semantic, factual, ortographic, logical and mathematical inconsistencies using the provided semantic
@@ -79,10 +80,12 @@ class SemanticVerifier:
               NOTE: Be aware always that inconsistent segements maybe zero or more than one and they may overlap, so it may result in an empty list of indices or more than a list of indices identifying inconsistencies.
             
             Output format:
-              The following is an example of the output fromat of this task
-              text to verify: "Yes, Scotland made their debut in the UEFA Euro 1996 qualifying phase. This was their first appearance in a European Championship qualifying campaign since the inception of the UEFA European Football Championship in 1960. Scotland finished third in their group behind England and Switzerland, missing out on qualification for the tournament."
-              Inconsistencies identification: {{"soft_labels":[{{"start":1,"prob":0.6666666667,"end":4}},{{"start":6,"prob":0.3333333333,"end":31}},{{"start":39,"prob":0.3333333333,"end":49}},{{"start":49,"prob":0.6666666667,"end":53}},{{"start":53,"prob":0.3333333333,"end":70}},{{"start":72,"prob":0.3333333333,"end":87}},{{"start":87,"prob":1.0,"end":92}},{{"start":92,"prob":0.6666666667,"end":103}},{{"start":103,"prob":0.3333333333,"end":221}},{{"start":223,"prob":0.3333333333,"end":232}},{{"start":232,"prob":0.6666666667,"end":246}},{{"start":246,"prob":0.3333333333,"end":262}},{{"start":262,"prob":0.6666666667,"end":269}},{{"start":269,"prob":1.0,"end":276}},{{"start":276,"prob":0.6666666667,"end":281}},{{"start":281,"prob":1.0,"end":292}},{{"start":292,"prob":0.3333333333,"end":294}},{{"start":294,"prob":0.6666666667,"end":322}},{{"start":322,"prob":0.3333333333,"end":341}}],"hard_labels":[[1,4],[49,53],[87,103],[232,246],[262,292],[294,322]]}}
-              Note that only probabilities more than 0.5 will be included in the "hard_labels" list.
+              The following is an example of the output fromat of this task:
+              text_to_verify: "Yes, Scotland made their debut in the UEFA Euro 1996 qualifying phase. This was their first appearance in a European Championship qualifying campaign since the inception of the UEFA European Football Championship in 1960. Scotland finished third in their group behind England and Switzerland, missing out on qualification for the tournament."
+              inconsistency_identification: {{"soft_labels":[{{"start":1,"prob":0.6666666667,"end":4}},{{"start":6,"prob":0.3333333333,"end":31}},{{"start":39,"prob":0.3333333333,"end":49}},{{"start":49,"prob":0.6666666667,"end":53}},{{"start":53,"prob":0.3333333333,"end":70}},{{"start":72,"prob":0.3333333333,"end":87}},{{"start":87,"prob":1.0,"end":92}},{{"start":92,"prob":0.6666666667,"end":103}},{{"start":103,"prob":0.3333333333,"end":221}},{{"start":223,"prob":0.3333333333,"end":232}},{{"start":232,"prob":0.6666666667,"end":246}},{{"start":246,"prob":0.3333333333,"end":262}},{{"start":262,"prob":0.6666666667,"end":269}},{{"start":269,"prob":1.0,"end":276}},{{"start":276,"prob":0.6666666667,"end":281}},{{"start":281,"prob":1.0,"end":292}},{{"start":292,"prob":0.3333333333,"end":294}},{{"start":294,"prob":0.6666666667,"end":322}},{{"start":322,"prob":0.3333333333,"end":341}}],"hard_labels":[[1,4],[49,53],[87,103],[232,246],[262,292],[294,322]]}}
+              explanation: Here goes your explanation for each set of hard_labels
+              
+            Note that only probabilities more than 0.5 will be included in the "hard_labels" list.
             
             Let's do it:
             Text to verify:
@@ -98,34 +101,20 @@ class SemanticVerifier:
             """
         return prompt
     
-    def _parse_model_output(self, output: str, original_text: str) -> VerificationResult:
-        """Parse the model's output into a structured format."""
+    def _parse_model_output(self, output: str, original_text: str=None) -> VerificationResult:
+        # Define regex patterns to match the required sections
         try:
-            # Split output into marked text and explanations
-            parts = output.split("\n\nInconsistencies found:")
-            marked_text = parts[0].strip()
+            inconsistency_pattern = r'inconsistency_identification:\s*(\{.*?\})'
+            explanation_pattern = r'explanation:\s*(.*?)(?=\n\S+:|$)'
+            # Search for the patterns in the text
+            inconsistency_match = re.search(inconsistency_pattern, output, re.DOTALL)
+            explanation_match = re.search(explanation_pattern, output, re.DOTALL)
+            # Extract the matched groups
+            inconsistency_text = inconsistency_match.group(1).strip() if inconsistency_match else None
+            explanation_text = explanation_match.group(1).strip() if explanation_match else None
+    
+            return inconsistency_text, explanation_text 
             
-            # Extract inconsistencies
-            inconsistencies = []
-            if len(parts) > 1:
-                explanations = parts[1].strip().split("\n")
-                for exp in explanations:
-                    if exp.strip():
-                        inconsistencies.append({
-                            "text": exp.split(": ")[0],
-                            "explanation": exp.split(": ")[1]
-                        })
-            
-            # Calculate confidence score based on number and severity of inconsistencies
-            confidence_score = 1.0 - (len(inconsistencies) * 0.1)  # Simple scoring mechanism
-            confidence_score = max(0.0, min(1.0, confidence_score))
-            
-            return VerificationResult(
-                original_text=original_text,
-                marked_text=marked_text,
-                inconsistencies=inconsistencies,
-                confidence_score=confidence_score
-            )
         except Exception as e:
             logging.error(f"Error parsing model output: {e}")
             return VerificationResult(
