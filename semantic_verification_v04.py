@@ -22,9 +22,9 @@ class VerificationResult:
     confidence_score: float
 
 class SemanticVerifier:
-    def __init__(self, model_name: str = "mosaicml/mpt-7b-instruct", device: str = "cuda", authenticate:bool=False):
+    def __init__(self, model_name: str, device: str="cuda", authenticate:bool=False):
         """
-        Initialize the semantic verifier with MPT-7B-Instruct model.
+        Initialize the semantic verifier with *-Instruct model.
         
         Args:
             model_name: HuggingFace model identifier
@@ -63,27 +63,39 @@ class SemanticVerifier:
         print("relations:", relations_text)
         print("tipo de relations:", type(relations_text))
         prompt = f"""
-          Task: Analyze the following text for semantic inconsistencies using the provided semantic relations extracted from documental sources:
+          Task:
+            Analyze the following text ("text to verify") for semantic, factual, ortographic, logical and mathematical inconsistencies using the provided semantic
+            relations extracted from documental (ground truth) textual sources and identify where specifically such inconsistences are in the text to verify. 
+          
+          Sequential Instructions to follow in this task:
+            1. Project the semantic, factual, ortographic, logical and mathematical knowledge in the "text to verify" against the semantic relations extracted from the ground truth text and memorize the result;
+            2. Project your own semantic, factual, ortographic, logical and mathematical knowledge onto the "text to verify" and memorize the result;
+            3. Use the above results to identify any inconsistencies, contradictions, or errors in the "text to verify";
+            4. Estimate a probabilty of that each word in the "text to verify" is part of any inconsistency ("soft_labels");
+            5. Identify the position (indices) of words ("start" inclusive, "end" exclusive) in the "text to verify" that are part of any inconsistency ("hard_labels");
+            6. Mark inconsistent segments in the "text to verify" with XML tags
+            7. Prepare a brief explanation for each inconsistency
 
-          {relations_text}
-
-          Text to verify:
-          {text}
-
-          Its relations:
-          {ans_relations_text}
-
-          Instructions:
-          1. Compare the text against the semantic relations
-          2. Identify any inconsistencies or contradictions
-          3. Mark inconsistent segments with XML tags
-          4. Provide a brief explanation for each inconsistency
+            NOTE: Be aware always that inconsistent segements maybe zero or more than one and they may overlap, so it may result in an empty list of indices or more than a list of indices identifying inconsistencies.
           
           Output format:
-          1. First provide the text with <inconsistency> tags around problematic segments
-          2. Then list each inconsistency with its explanation
+            The following is an example of the output fromat of this task
+            text to verify: "Yes, Scotland made their debut in the UEFA Euro 1996 qualifying phase. This was their first appearance in a European Championship qualifying campaign since the inception of the UEFA European Football Championship in 1960. Scotland finished third in their group behind England and Switzerland, missing out on qualification for the tournament."
+            Inconsistencies identification: {"soft_labels":[{"start":1,"prob":0.6666666667,"end":4},{"start":6,"prob":0.3333333333,"end":31},{"start":39,"prob":0.3333333333,"end":49},{"start":49,"prob":0.6666666667,"end":53},{"start":53,"prob":0.3333333333,"end":70},{"start":72,"prob":0.3333333333,"end":87},{"start":87,"prob":1.0,"end":92},{"start":92,"prob":0.6666666667,"end":103},{"start":103,"prob":0.3333333333,"end":221},{"start":223,"prob":0.3333333333,"end":232},{"start":232,"prob":0.6666666667,"end":246},{"start":246,"prob":0.3333333333,"end":262},{"start":262,"prob":0.6666666667,"end":269},{"start":269,"prob":1.0,"end":276},{"start":276,"prob":0.6666666667,"end":281},{"start":281,"prob":1.0,"end":292},{"start":292,"prob":0.3333333333,"end":294},{"start":294,"prob":0.6666666667,"end":322},{"start":322,"prob":0.3333333333,"end":341}],"hard_labels":[[1,4],[49,53],[87,103],[232,246],[262,292],[294,322]]}
+            Note that only probabilities more than 0.5 will be included in the "hard_labels" list.
+
+          Let's do it:
+          Text to verify:
+          {text}
           
-          Response:"""
+          Relations extracted from ground truth sources:
+          {relations_text}
+          
+          Semantic relations extracted from the text to verify:
+          {ans_relations_text}
+          
+          Response:
+          """
         return prompt
     
     def _parse_model_output(self, output: str, original_text: str) -> VerificationResult:
