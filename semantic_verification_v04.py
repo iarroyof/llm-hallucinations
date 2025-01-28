@@ -124,7 +124,7 @@ class SemanticVerifier:
                 confidence_score=0.0
             )
     
-    def verify_text(self, relations: Any, relations_ans:Any, text: str) -> VerificationResult:
+    def verify_text(self, wiki_relations: Any, relations_ans:Any, ans: str) -> VerificationResult:
         """
         Verify text against semantic relations and identify inconsistencies.
         
@@ -135,8 +135,8 @@ class SemanticVerifier:
         Returns:
             VerificationResult containing marked text and identified inconsistencies
         """
-        # Create the prompt relations: Any, text: str, text_rels:Any=None, text_form_relations=True
-        prompt = self._create_verification_prompt(relations, relations_ans, text)
+        # Create the prompt__ relations: relations: Any, text: str, text_rels:Any=None, text_form_relations=True
+        prompt = self._create_verification_prompt(wiki_relations, ans, relations_ans)
         
         # Tokenize and generate
         inputs = self.tokenizer(prompt, return_tensors="pt", max_length=2048, truncation=True).to(self.device)
