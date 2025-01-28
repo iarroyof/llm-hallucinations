@@ -3,6 +3,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from typing import List, Dict, Tuple, Any
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+from huggingface_hub import login
 import logging
 
 @dataclass
@@ -31,7 +32,10 @@ class SemanticVerifier:
         """
         self.device = device if torch.cuda.is_available() and device == "cuda" else "cpu"
         logging.info(f"Loading model {model_name} on {self.device}")
-        
+        # Replace with your Hugging Face token
+        with open('tokadena.txt') as f:
+            token = f.readline().strip()
+        login(token=token)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
