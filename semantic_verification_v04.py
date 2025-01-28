@@ -63,12 +63,6 @@ class SemanticVerifier:
     
         prompt = f"""
             Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts.
-            
-            Input:
-            1. Text to check: {text}
-            2. Known facts (as relations): {relations_text}
-            3. Relations found in text: {ans_relations_text}
-            
             Instructions:
             1. Compare the text against the known facts
             2. Find any parts that are:
@@ -90,8 +84,11 @@ class SemanticVerifier:
                 "marked_text": "text with <inconsistent>tags</inconsistent>",
                 "explanation": "Brief explanation of each error"
             }}
-            
-            Please analyze the text and provide the output in the format shown above.
+            Please analyze according to instrucionts and provide the output in the format shown above.
+            Input:
+            1. Text to check: {text}
+            2. Known facts (as relations): {relations_text}
+            3. Relations found in text: {ans_relations_text}
             """
         return prompt
 
