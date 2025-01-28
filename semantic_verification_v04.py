@@ -95,7 +95,7 @@ class SemanticVerifier:
             """
         return prompt
 
-        def create_verification_prompt(self, relations: Any, text: str, text_rels:Any=None, text_form_relations=True) -> str:
+    def create_verification_prompt(self, relations: Any, text: str, text_rels:Any=None, text_form_relations=True) -> str:
         """Create the verification prompt for the model."""
         if not text_form_relations:
             relations_text = self._format_relations(relations)
