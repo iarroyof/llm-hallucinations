@@ -80,12 +80,31 @@ class SemanticVerifier:
               NOTE: Be aware always that inconsistent segements maybe zero or more than one and they may overlap, so it may result in an empty list of indices or more than a list of indices identifying inconsistencies.
             
             Output format:
-              The following is an example of the output fromat of this task:
+              The following is an example of the output fromat of this task (Note that only probabilities more than 0.5 will be included in the "hard_labels" list):
               text_to_verify: "Yes, Scotland made their debut in the UEFA Euro 1996 qualifying phase. This was their first appearance in a European Championship qualifying campaign since the inception of the UEFA European Football Championship in 1960. Scotland finished third in their group behind England and Switzerland, missing out on qualification for the tournament."
-              inconsistency_identification: {{"soft_labels":[{{"start":1,"prob":0.6666666667,"end":4}},{{"start":6,"prob":0.3333333333,"end":31}},{{"start":39,"prob":0.3333333333,"end":49}},{{"start":49,"prob":0.6666666667,"end":53}},{{"start":53,"prob":0.3333333333,"end":70}},{{"start":72,"prob":0.3333333333,"end":87}},{{"start":87,"prob":1.0,"end":92}},{{"start":92,"prob":0.6666666667,"end":103}},{{"start":103,"prob":0.3333333333,"end":221}},{{"start":223,"prob":0.3333333333,"end":232}},{{"start":232,"prob":0.6666666667,"end":246}},{{"start":246,"prob":0.3333333333,"end":262}},{{"start":262,"prob":0.6666666667,"end":269}},{{"start":269,"prob":1.0,"end":276}},{{"start":276,"prob":0.6666666667,"end":281}},{{"start":281,"prob":1.0,"end":292}},{{"start":292,"prob":0.3333333333,"end":294}},{{"start":294,"prob":0.6666666667,"end":322}},{{"start":322,"prob":0.3333333333,"end":341}}],"hard_labels":[[1,4],[49,53],[87,103],[232,246],[262,292],[294,322]]}}
-              explanation: Here goes your explanation for each set of hard_labels
+              inconsistency_identification:
+                  "{{"soft_labels":[{{"start":1,"prob":0.6666666667,"end":4}},
+                                  {{"start":6,"prob":0.3333333333,"end":31}},
+                                  {{"start":39,"prob":0.3333333333,"end":49}},
+                                  {{"start":49,"prob":0.6666666667,"end":53}},
+                                  {{"start":53,"prob":0.3333333333,"end":70}},
+                                  {{"start":72,"prob":0.3333333333,"end":87}},
+                                  {{"start":87,"prob":1.0,"end":92}},
+                                  {{"start":92,"prob":0.6666666667,"end":103}},
+                                  {{"start":103,"prob":0.3333333333,"end":221}},
+                                  {{"start":223,"prob":0.3333333333,"end":232}},
+                                  {{"start":232,"prob":0.6666666667,"end":246}},
+                                  {{"start":246,"prob":0.3333333333,"end":262}},
+                                  {{"start":262,"prob":0.6666666667,"end":269}},
+                                  {{"start":269,"prob":1.0,"end":276}},
+                                  {{"start":276,"prob":0.6666666667,"end":281}},
+                                  {{"start":281,"prob":1.0,"end":292}},
+                                  {{"start":292,"prob":0.3333333333,"end":294}},
+                                  {{"start":294,"prob":0.6666666667,"end":322}},
+                                  {{"start":322,"prob":0.3333333333,"end":341}}],
+                   "hard_labels":[[1,4],[49,53],[87,103],[232,246],[262,292],[294,322]]}}"
               
-            Note that only probabilities more than 0.5 will be included in the "hard_labels" list.
+              explanation: Here goes the explanation on the reasoning leaving you to conclude that each pair of hard_labels is identified
             
             Let's do it:
             Text to verify:
