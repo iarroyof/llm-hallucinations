@@ -133,7 +133,7 @@ class SemanticVerifier:
         prompt = self._create_verification_prompt(relations, relations_ans, text)
         
         # Tokenize and generate
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        inputs = self.tokenizer(prompt, return_tensors="pt", max_length=2048, truncation=True).to(self.device)
         
         with torch.no_grad():
             outputs = self.model.generate(
