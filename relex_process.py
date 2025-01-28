@@ -25,13 +25,16 @@ wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_
 verifier = SemanticVerifier(device="cuda" if torch.cuda.is_available() else "cpu")
     
     # Run verification
-result = verifier.verify_text(wiki_docs_fquestion_relations[0], fanswer_relations[0], answers[0])
-    
+
+for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relations,
+                                                        fanswer_relations,
+                                                        answers):
+        result = verifier.verify_text(wiki_relations, answer_relations, answer)    
     # Print results
-print("Marked text:")
-print(result.marked_text)
-print("\nInconsistencies found:")
-for inc in result.inconsistencies:
-    print(f"- {inc['text']}: {inc['explanation']}")
-    print(f"\nConfidence score: {result.confidence_score:.2f}")
-st()
+        print("Marked text:")
+        print(result.marked_text)
+        print("\nInconsistencies found:")
+        for inc in result.inconsistencies:
+            print(f"- {inc['text']}: {inc['explanation']}")
+            print(f"\nConfidence score: {result.confidence_score:.2f}")
+        st()
