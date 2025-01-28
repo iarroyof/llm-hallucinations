@@ -22,7 +22,7 @@ class VerificationResult:
     confidence_score: float
 
 class SemanticVerifier:
-    def __init__(self, model_name: str = "mosaicml/mpt-7b-instruct", device: str = "cuda"):
+    def __init__(self, model_name: str = "mosaicml/mpt-7b-instruct", device: str = "cuda", authenticate:bool=False):
         """
         Initialize the semantic verifier with MPT-7B-Instruct model.
         
@@ -33,9 +33,10 @@ class SemanticVerifier:
         self.device = device if torch.cuda.is_available() and device == "cuda" else "cpu"
         logging.info(f"Loading model {model_name} on {self.device}")
         # Replace with your Hugging Face token
-        with open('tokadena.txt') as f:
-            token = f.readline().strip()
-        login(token=token)
+        if authenticate:
+            with open('hf_token.txt') as f:
+                token = f.readline().strip()
+            login(token=token)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
