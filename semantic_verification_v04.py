@@ -155,4 +155,4 @@ class SemanticVerifier:
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         
         # Parse and return results
-        return self._parse_model_output(response, text)
+        return self._parse_model_output(response, ans)
