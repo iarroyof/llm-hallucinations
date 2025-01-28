@@ -26,16 +26,15 @@ wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_
 verifier = SemanticVerifier(model_name="meta-llama/Llama-3.2-1B-Instruct", device=device)
     
     # Run verification
-
+results = []
 for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relations,
                                                         fanswer_relations,
                                                         answers):
-        result = verifier.verify_text(wiki_relations, answer_relations, answer)    
+        result, explanation = verifier.verify_text(wiki_relations, answer_relations, answer)    
     # Print results
-        print("Marked text:")
-        print(result.marked_text)
-        print("\nInconsistencies found:")
-        for inc in result.inconsistencies:
-            print(f"- {inc['text']}: {inc['explanation']}")
-            print(f"\nConfidence score: {result.confidence_score:.2f}")
+        print("Dictionary:")
+        print(result)
+        print("\nExplanation:")
+        print(explanation)
+        results.append(result)
         st()
