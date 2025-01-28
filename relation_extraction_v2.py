@@ -78,6 +78,7 @@ def extract_relations(answers, n_qs_semantic_search_results, extractor):
     return wiki_docs_fquestion_relations, fanswer_relations
 
 # Example usage
+"""
 if __name__ == "__main__":
     texts = [
         "In July 2012, Ancestry.com found a strong likelihood that Dunham was descended from John Punch.",
@@ -95,3 +96,4 @@ if __name__ == "__main__":
         for relation in relations:
             print(f"  Relation: {relation}")
         print()
+"""
