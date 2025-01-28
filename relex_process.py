@@ -22,7 +22,8 @@ answers = [ans for _, ans in questions_answers]
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(answers, n_qs_semantic_search_results, extractor)
 # Take wiki_docs_fquestion_relations and fanswer_relations and give them to the semantic verifier.
     # Initialize verifier
-verifier = SemanticVerifier(device="cuda" if torch.cuda.is_available() else "cpu")
+verifier = SemanticVerifier(model_name="meta-llama/Llama-3.2-1B-Instruct",
+                           device="cuda" if torch.cuda.is_available() else "cpu")
     
     # Run verification
 
