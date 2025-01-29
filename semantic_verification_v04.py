@@ -63,48 +63,9 @@ class SemanticVerifier:
             relations_text = relations
             ans_relations_text = text_rels
 
-        prompt = f"""
-            Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts.
+        prompt = open('prompt_template.txt', 'r').read()
             
-            Instructions:
-            1. Compare the text with the provided ground truth relations.
-            2. Identify any factual, logical, or semantic errors in the text.
-            3. For each error:
-               - Mark the start and end character positions.
-               - Wrap the error in XML tags: <inconsistent>...</inconsistent>.
-               - Provide a brief explanation.
-            
-            Output Format:
-            {{
-                "hard_labels": [[start, end], ...],
-                "marked_text": "text with <inconsistent>tagged parts</inconsistent>",
-                "explanation": "Explanation of inconsistencies"
-            }}
-            
-            Examples:
-            1. Input:
-               - Text: "All birds can fly."
-               - Ground truth relations: [("penguin", "cannot", "fly")]
-               - Relations extracted from text: [("birds", "can", "fly")]
-               Response:
-               {{
-                   "hard_labels": [[4, 9]],
-                   "marked_text": "All <inconsistent>birds</inconsistent> can fly.",
-                   "explanation": "The text claims that all birds can fly, which is incorrect. Penguins, for example, cannot fly."
-               }}
-            
-            2. Input:
-               - Text: "Cats are reptiles."
-               - Ground truth relations: [("cats", "are", "mammals")]
-               - Relations extracted from text: [("cats", "are", "reptiles")]
-               Response:
-               {{
-                   "hard_labels": [[0, 4]],
-                   "marked_text": "<inconsistent>Cats</inconsistent> are reptiles.",
-                   "explanation": "The text incorrectly classifies cats as reptiles. Cats are mammals."
-               }}
-            
-            Input:
+        prompt + f"""\nInput:
             1. Text to check: {text}
             2. Relations extracted from the text: {ans_relations_text}
             3. Ground truth relations: {relations_text}
