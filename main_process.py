@@ -5,6 +5,7 @@ from wiki_sample import WikipediaBatchGenerator
 from pdb import set_trace as st
 import torch
 import json
+import re
 from typing import Dict, Any
 
 def parse_deepseek_output(output: str) -> Dict[str, Any]:
@@ -16,22 +17,29 @@ def parse_deepseek_output(output: str) -> Dict[str, Any]:
 
     Returns:
         A dictionary containing the parsed data.
+
+    Raises:
+        ValueError: If the output cannot be parsed into valid JSON.
     """
     try:
-        # Extract the JSON part from the output
-        json_start = output.find("{")
-        json_end = output.rfind("}") + 1
-        json_str = output[json_start:json_end]
+        # Clean the output by removing non-JSON content
+        # Look for the JSON part using a regex pattern
+        json_pattern = r"\{.*\}"  # Matches anything between { and }
+        match = re.search(json_pattern, output, re.DOTALL)
 
-        # Parse the JSON string into a Python dictionary
+        if not match:
+            raise ValueError("No JSON content found in the output.")
+
+        json_str = match.group(0).strip()
+
+        # Validate and parse the JSON string
         parsed_output = json.loads(json_str)
-
         return parsed_output
+
     except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse DeepSeek output: {e}")
+        raise ValueError(f"Failed to parse DeepSeek output due to invalid JSON: {e}")
     except Exception as e:
-        raise ValueError(f"Unexpected error while parsing DeepSeek output: {e}")
-            
+        raise ValueError(f"Unexpected error while parsing DeepSeek output: {e}")            
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = ['model_input', 'model_output_text']
