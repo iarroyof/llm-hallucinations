@@ -1,5 +1,4 @@
- Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts.
-            
+ Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts. Only generate concretely the specified output format as a response. 
             Instructions:
             1. Compare the text with the provided ground truth relations.
             2. Identify any factual, logical, or semantic errors in the text.
@@ -41,5 +40,4 @@
                    "marked_text": "<inconsistent>Cats</inconsistent> are reptiles.",
                    "explanation": "The text incorrectly classifies cats as reptiles. Cats are mammals."
                }}
-            
-            Input:
+
