@@ -228,7 +228,7 @@ class SemanticVerifier:
                 confidence_score=0.0
             )
     
-    def verify_text(self, wiki_relations: Any, relations_ans:Any, ans: str, beam:bool=True) -> VerificationResult:
+    def verify_text(self, wiki_relations: Any, relations_ans:Any, ans: str, beam:bool=False) -> VerificationResult:
         """
         Verify text against semantic relations and identify inconsistencies.
         
