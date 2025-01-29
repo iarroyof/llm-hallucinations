@@ -55,17 +55,3 @@ class WikipediaBatchGenerator:
         self.len = len(self.batches)
         return self.batches
 
-
-# Example usage
-if __name__ == "__main__":
-    generator = WikipediaBatchGenerator()
-    batches = generator.get_batches()
-
-    # Print the total number of batches
-    print(f"Total batches: {len(batches)}")
-
-    # Print the first 100 characters of each batch
-    for i, batch in enumerate(batches):
-        print(f"Batch {i+1} (Theme: {generator.themes[i]}):")
-        for j, paragraph in enumerate(batch):
-            print(f"  {paragraph[:100]}...")  # Print first 100 characters of the paragraph
