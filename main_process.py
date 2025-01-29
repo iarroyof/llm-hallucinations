@@ -7,33 +7,39 @@ import torch
 import json
 import re
 
-def extract_and_parse_json(text):
+def extract_specific_json(text):
     """
-    Extract and parse JSON content from a plain text string.
+    Extract specific JSON structure containing text_to_verify, inconsistency_identification, 
+    and explanation from a larger text.
     
     Args:
-        text (str): Input string that contains JSON content among other text
+        text (str): Input text containing the JSON structure
         
     Returns:
-        dict: Parsed JSON object or None if no valid JSON is found
-        
-    Example:
-        >>> text = "Some random text { 'json': 'content' } more text"
-        >>> result = extract_and_parse_json(text)
+        dict: Parsed JSON with the specific structure or None if not found
     """
     try:
-        # Find content between first { and last }
-        json_pattern = r'\{(?:[^{}]|(?R))*\}'
-        match = re.search(json_pattern, text)
+        # Pattern to match the specific JSON structure we want
+        pattern = r'\{\s*"text_to_verify":\s*"[^"]+",\s*"inconsistency_identification":\s*\{[^}]+\},\s*"explanation":\s*"[^"]+"\s*\}'
         
+        # Find the match
+        match = re.search(pattern, text)
         if not match:
             return None
             
+        # Parse the JSON
         json_str = match.group(0)
-        return json.loads(json_str)
+        result = json.loads(json_str)
+        
+        # Validate the structure
+        required_keys = {'text_to_verify', 'inconsistency_identification', 'explanation'}
+        if not all(key in result for key in required_keys):
+            return None
+            
+        return result
         
     except (json.JSONDecodeError, AttributeError) as e:
-        return None            
+        return None
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = ['model_input', 'model_output_text']
