@@ -53,8 +53,47 @@ class SemanticVerifier:
         for i, rel in enumerate(relations, 1):
             formatted += f"{i}. {rel.subject} {rel.predicate} {rel.object} (confidence: {rel.confidence:.2f})\n"
         return formatted
-    
+
     def _create_verification_prompt(self, relations: Any, text: str, text_rels:Any=None, text_form_relations=True) -> str:
+        """Create the verification prompt for the model."""
+        if not text_form_relations:
+            relations_text = self._format_relations(relations)
+            ans_relations_text = self._format_relations(text_rels)
+        else:
+            relations_text = relations
+            ans_relations_text = text_rels
+
+        prompt = f"""
+            Task:
+              Identify inconsistencies in the "text to verify" using the provided semantic relations from ground truth sources.
+            
+            Instructions:
+              1. Compare the extracted semantic relations from the "text to verify" with those from the ground truth.
+              2. Identify any factual, logical, semantic, ortographic, or mathematical inconsistencies.
+              3. Estimate the probability of inconsistency for each word (soft_labels).
+              4. Mark the exact position (start index inclusive, end index exclusive) of inconsistent segments (hard_labels).
+              5. Wrap inconsistent segments in XML tags.
+              6. Briefly explain why each inconsistency exists.
+            
+            Format:
+            ```json
+            {{
+              "text_to_verify": "<text>",
+              "inconsistency_identification": {{
+                "soft_labels": [
+                  {{"start":<int>, "prob":<float>, "end":<int>}}
+                ],
+                "hard_labels": [[<int>, <int>]]
+              }},
+              "explanation": "<reasoning>"
+            }}
+
+            Inputs:
+              1. Text to check: {text}
+              2. Known facts (as relations): {relations_text}
+              3. Relations found in given text: {ans_relations_text}
+        """
+    def __create_verification_prompt(self, relations: Any, text: str, text_rels:Any=None, text_form_relations=True) -> str:
         """Create the verification prompt for the model."""
         if not text_form_relations:
             relations_text = self._format_relations(relations)
