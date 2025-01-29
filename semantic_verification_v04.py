@@ -65,7 +65,7 @@ class SemanticVerifier:
 
         prompt = open('prompt_template.txt', 'r').read()
             
-        prompt + f"""\nInput:
+        prompt = prompt + f"""\nInput:
             1. Text to check: {text}
             2. Relations extracted from the text: {ans_relations_text}
             3. Ground truth relations: {relations_text}
