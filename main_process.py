@@ -72,5 +72,5 @@ for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relation
     result, explanation = verifier.verify_text(wiki_relations, answer_relations, answer)    
     # Print result
     print("Dictionary:")
-    print(extract_and_parse_json(result))
+    print(extract_specific_json(result))
     st()
