@@ -6,40 +6,34 @@ from pdb import set_trace as st
 import torch
 import json
 import re
-from typing import Dict, Any
 
-def parse_deepseek_output(output: str) -> Dict[str, Any]:
+def extract_and_parse_json(text):
     """
-    Parse the DeepSeek output and return a Python dictionary.
-
+    Extract and parse JSON content from a plain text string.
+    
     Args:
-        output: The DeepSeek output as a string.
-
+        text (str): Input string that contains JSON content among other text
+        
     Returns:
-        A dictionary containing the parsed data.
-
-    Raises:
-        ValueError: If the output cannot be parsed into valid JSON.
+        dict: Parsed JSON object or None if no valid JSON is found
+        
+    Example:
+        >>> text = "Some random text { 'json': 'content' } more text"
+        >>> result = extract_and_parse_json(text)
     """
     try:
-        # Clean the output by removing non-JSON content
-        # Look for the JSON part using a regex pattern
-        json_pattern = r"\{.*\}"  # Matches anything between { and }
-        match = re.search(json_pattern, output, re.DOTALL)
-
+        # Find content between first { and last }
+        json_pattern = r'\{(?:[^{}]|(?R))*\}'
+        match = re.search(json_pattern, text)
+        
         if not match:
-            raise ValueError("No JSON content found in the output.")
-
-        json_str = match.group(0).strip()
-
-        # Validate and parse the JSON string
-        parsed_output = json.loads(json_str)
-        return parsed_output
-
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse DeepSeek output due to invalid JSON: {e}")
-    except Exception as e:
-        raise ValueError(f"Unexpected error while parsing DeepSeek output: {e}")            
+            return None
+            
+        json_str = match.group(0)
+        return json.loads(json_str)
+        
+    except (json.JSONDecodeError, AttributeError) as e:
+        return None            
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = ['model_input', 'model_output_text']
@@ -72,5 +66,5 @@ for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relation
     result, explanation = verifier.verify_text(wiki_relations, answer_relations, answer)    
     # Print result
     print("Dictionary:")
-    print(parse_deepseek_output(result))
+    print(extract_and_parse_json(result))
     st()
