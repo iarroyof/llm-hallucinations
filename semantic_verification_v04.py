@@ -255,7 +255,8 @@ class SemanticVerifier:
                 num_return_sequences=1,
                 pad_token_id=self.tokenizer.pad_token_id,  # Ensure pad_token_id is set
                 eos_token_id=self.tokenizer.eos_token_id,  # Use EOS token to stop generation
-                early_stopping=True  # Stop generation when the model reaches a natural stopping point
+                early_stopping=True,  # Stop generation when the model reaches a natural stopping point
+                num_beams=2
             )
         
         # Decode the output
