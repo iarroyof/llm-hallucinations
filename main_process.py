@@ -4,7 +4,34 @@ from json_utils import JSONLIterator
 from wiki_sample import WikipediaBatchGenerator
 from pdb import set_trace as st
 import torch
-        
+import json
+from typing import Dict, Any
+
+def parse_deepseek_output(output: str) -> Dict[str, Any]:
+    """
+    Parse the DeepSeek output and return a Python dictionary.
+
+    Args:
+        output: The DeepSeek output as a string.
+
+    Returns:
+        A dictionary containing the parsed data.
+    """
+    try:
+        # Extract the JSON part from the output
+        json_start = output.find("{")
+        json_end = output.rfind("}") + 1
+        json_str = output[json_start:json_end]
+
+        # Parse the JSON string into a Python dictionary
+        parsed_output = json.loads(json_str)
+
+        return parsed_output
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Failed to parse DeepSeek output: {e}")
+    except Exception as e:
+        raise ValueError(f"Unexpected error while parsing DeepSeek output: {e}")
+            
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = ['model_input', 'model_output_text']
@@ -37,8 +64,5 @@ for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relation
     result, explanation = verifier.verify_text(wiki_relations, answer_relations, answer)    
     # Print result
     print("Dictionary:")
-    print(result)
-    print("\nExplanation:")
-    print(explanation)
-    results.append(result)
+    print(parse_deepseek_output(result))
     st()
