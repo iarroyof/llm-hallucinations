@@ -100,9 +100,7 @@ class SemanticVerifier:
         else:
             relations_text = relations
             ans_relations_text = text_rels
-            
-        #print("relations:", relations_text)
-        #print("tipo de relations:", type(relations_text))
+
         prompt = f"""
             Task:
               Analyze the following text ("text to verify") for semantic, factual, ortographic, logical and mathematical inconsistencies using the provided semantic
