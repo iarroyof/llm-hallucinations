@@ -76,17 +76,19 @@ class SemanticVerifier:
             5. Add XML tags around the incorrect parts
             6. Explain why these parts are incorrect
             
-            Expected Output Format:
+            Expected Output Format (jsonl):
             {{
+                "given_text": "Text being given to verify for inconsistencies"
                 "soft_labels": [
                     {{"start": number, "end": number, "prob": number}},
                     ...
                 ],
                 "hard_labels": [[start, end], ...],
-                "marked_text": "text with <inconsistent>tagged part</inconsistent>",
-                "explanation": "Brief explanation of each error"
+                "marked_text": "Text being given <inc>to verify</inc> for inconsistencies",
+                "explanation": "Here goes a brief explanation for each inconsistency identified and hard labeled"
             }}
-            Please analyze according to instrucionts and provide the output in the format shown above.
+            Please analyze the following inputs according to instrucionts and output format shown above.
+            Only generate the jsonl output, whithout additional text.
             Input:
             1. Text to check: {text}
             2. Known facts (as relations): {relations_text}
@@ -212,7 +214,9 @@ class SemanticVerifier:
                 top_p=0.95,
                 do_sample=True,
                 num_return_sequences=1,
-                pad_token_id=self.tokenizer.pad_token_id  # Ensure pad_token_id is set
+                pad_token_id=self.tokenizer.pad_token_id,  # Ensure pad_token_id is set
+                eos_token_id=self.tokenizer.eos_token_id,  # Use EOS token to stop generation
+                early_stopping=True  # Stop generation when the model reaches a natural stopping point
             )
         
         # Decode the output
