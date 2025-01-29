@@ -205,7 +205,7 @@ class SemanticVerifier:
             outputs = self.model.generate(
                 inputs.input_ids,
                 max_length=4096,
-                temperature=0.1,
+                temperature=0.5,
                 top_p=0.95,
                 do_sample=True,
                 num_return_sequences=1
