@@ -44,6 +44,8 @@ class SemanticVerifier:
             trust_remote_code=True,
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32
         ).to(self.device)
+        if self.tokenizer.pad_token_id is None:
+            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         
     def _format_relations(self, relations: List[SemanticRelation]) -> str:
         """Format semantic relations into a string for the prompt."""
@@ -204,11 +206,13 @@ class SemanticVerifier:
         with torch.no_grad():
             outputs = self.model.generate(
                 inputs.input_ids,
+                attention_mask=inputs.attention_mask,  # Pass attention mask
                 max_length=4096,
                 temperature=0.5,
                 top_p=0.95,
                 do_sample=True,
-                num_return_sequences=1
+                num_return_sequences=1,
+                pad_token_id=self.tokenizer.pad_token_id  # Ensure pad_token_id is set
             )
         
         # Decode the output
