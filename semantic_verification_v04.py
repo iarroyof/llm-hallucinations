@@ -93,6 +93,7 @@ class SemanticVerifier:
               2. Known facts (as relations): {relations_text}
               3. Relations found in given text: {ans_relations_text}
         """
+        return prompt
     def __create_verification_prompt(self, relations: Any, text: str, text_rels:Any=None, text_form_relations=True) -> str:
         """Create the verification prompt for the model."""
         if not text_form_relations:
@@ -227,7 +228,7 @@ class SemanticVerifier:
                 confidence_score=0.0
             )
     
-    def verify_text(self, wiki_relations: Any, relations_ans:Any, ans: str) -> VerificationResult:
+    def verify_text(self, wiki_relations: Any, relations_ans:Any, ans: str, beam:bool=True) -> VerificationResult:
         """
         Verify text against semantic relations and identify inconsistencies.
         
@@ -245,19 +246,28 @@ class SemanticVerifier:
         inputs = self.tokenizer(prompt, return_tensors="pt", max_length=2048, truncation=True).to(self.device)
         
         with torch.no_grad():
-            outputs = self.model.generate(
-                inputs.input_ids,
-                attention_mask=inputs.attention_mask,  # Pass attention mask
-                max_length=4096,
-                temperature=0.5,
-                top_p=0.95,
-                do_sample=True,
-                num_return_sequences=1,
-                pad_token_id=self.tokenizer.pad_token_id,  # Ensure pad_token_id is set
-                eos_token_id=self.tokenizer.eos_token_id,  # Use EOS token to stop generation
-                early_stopping=True,  # Stop generation when the model reaches a natural stopping point
-                num_beams=2
-            )
+            if beam:
+                outputs = self.model.generate(
+                    inputs.input_ids,
+                    attention_mask=inputs.attention_mask,
+                    max_length=4096,
+                    num_beams=5,  # Set num_beams > 1 for beam search
+                    early_stopping=True,  # Now this is valid
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id
+                )
+            else:
+                outputs = self.model.generate(
+                    inputs.input_ids,
+                    attention_mask=inputs.attention_mask,
+                    max_length=4096,
+                    temperature=0.5,
+                    top_p=0.95,
+                    do_sample=True,
+                    num_return_sequences=1,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id  # Keep this to stop generation at EOS
+                )
         
         # Decode the output
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
