@@ -66,15 +66,15 @@ class SemanticVerifier:
         prompt = f"""
             Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts.
             Instructions:
-            1. Comprhend and compare the text against the known facts (shown bellow)
+            1. Comprehend and compare the text against the known facts (shown bellow, put again in the 'given_text' key of the output format)
             2. Find any parts that are:
                - Factually incorrect
                - Logically contradicting
                - Semantically incorrect
-            3. For each sequence of characters in the given text, assign a probability (0-1) of it being part of a mistake
-            4. Mark the start and end character positions of incorrect parts
-            5. Add XML tags around the incorrect parts
-            6. Explain why these parts are incorrect
+            3. For each sequence of characters found to be inconsistent in the given text, assign a probability (0-1) of it being part of a mistake ('soft_labels')
+            4. Mark the start and end character positions of incorrect parts ('hard_labels')
+            5. Add XML tags around the incorrect parts ('marked_text')
+            6. Explain why these parts are incorrect ('explanation')
             
             Expected Output Format (jsonl):
             {{
