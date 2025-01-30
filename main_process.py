@@ -6,38 +6,41 @@ from pdb import set_trace as st
 import torch
 import json
 import re
+import os
+
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
 def extract_specific_json(text):
     """
-    Extract specific JSON structure containing text_to_verify, inconsistency_identification, 
+    Extract specific JSON structure containing text_to_verify, inconsistency_identification,
     and explanation from a larger text.
-    
+
     Args:
         text (str): Input text containing the JSON structure
-        
+
     Returns:
         dict: Parsed JSON with the specific structure or None if not found
     """
     try:
         # Pattern to match the specific JSON structure we want
         pattern = r'\{\s*"text_to_verify":\s*"[^"]+",\s*"inconsistency_identification":\s*\{[^}]+\},\s*"explanation":\s*"[^"]+"\s*\}'
-        
+
         # Find the match
         match = re.search(pattern, text)
         if not match:
             return None
-            
+
         # Parse the JSON
         json_str = match.group(0)
         result = json.loads(json_str)
-        
+
         # Validate the structure
         required_keys = {'text_to_verify', 'inconsistency_identification', 'explanation'}
         if not all(key in result for key in required_keys):
             return None
-            
+
         return result
-        
+
     except (json.JSONDecodeError, AttributeError) as e:
         return None
 
@@ -55,22 +58,22 @@ n_qs = generator.len
 questions_answers = JSONLIterator(file_path, keys, n_qs)
 extractor = RelationExtractor()
 # Iterate over the file and process each item
-answers = [ans for _, ans in questions_answers] 
+answers = [ans for _, ans in questions_answers]
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(
         answers,
         n_qs_semantic_search_results,
         extractor)
 # Take wiki_docs_fquestion_relations and fanswer_relations and give them to the semantic verifier.
     # Initialize verifier
-verifier = SemanticVerifier(model_name=model_name, device=device)
-    
+verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI_API_KEY)
+
     # Run verification
 results = []
+# Adaptar este loop para que solo haga 150 requests por minuto a lo mucho, esperar a que inicie el siguiente minuto
+# y seguir haciendo requests. 
 for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relations,
                                                         fanswer_relations,
                                                         answers):
-    result, explanation = verifier.verify_text(wiki_relations, answer_relations, answer)    
-    # Print result
+    result = verifier.verify_text(wiki_relations, answer_relations, answer)
     print("Dictionary:")
-    print(extract_specific_json(result))
-    st()
+    print(result)
