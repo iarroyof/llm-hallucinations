@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from typing import List, Dict
 from dataclasses import dataclass
 import logging
@@ -32,14 +32,21 @@ class SemanticProcessing:
             cohere_api_key: API key for Cohere client (required for semantic search).
         """
         self.device = device if torch.cuda.is_available() and device == "cuda" else "cpu"
+        
+        # Optimización para uso eficiente de memoria en GPU
+        bnb_config = BitsAndBytesConfig(load_in_8bit=True) if self.device == "cuda" else None
+        
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             trust_remote_code=True,
-            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32
+            quantization_config=bnb_config
         ).to(self.device)
 
         self.cohere_client = cohere.Client(cohere_api_key) if cohere_api_key else None
+        
+        # Liberar memoria de GPU antes de cargar el modelo de verificación
+        torch.cuda.empty_cache()
 
     def _format_relations(self, relations: List[SemanticRelation]) -> str:
         formatted = "Semantic Relations:\n"
