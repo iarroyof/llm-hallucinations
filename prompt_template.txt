@@ -1,43 +1,45 @@
- Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts. Only generate concretely the specified output format as a response. 
+ Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts. Only generate concretely the specified output format as a response.
             Instructions:
             1. Compare the text with the provided ground truth relations.
             2. Identify any factual, logical, or semantic errors in the text.
-            3. For each error:
-               - Mark the start and end character positions.
-               - Estimate the probability of each error to be confirmed
-               - Wrap the error in XML tags: <inconsistent>...</inconsistent>.
-               - Provide a brief explanation.
-            
-            Output Format:
-            {{
-                "hard_labels": [[start, end], ...],
-                "soft_labels": [{'start': int, 'end': int, 'prob': float}, ...],
+            3. For each error extract the following information:
+               - Identify the start and end character positions of the error ("hard_label").
+               - Estimate the probability of each error to be true positive ("soft_label")
+               - Wrap the error in XML tags: <inconsistent>...</inconsistent> ("marked_text").
+               - Provide a brief explanation ("explanation").
+            4. Perform your reasoning in no more than 400 words only when needed, be concise.
+            5. Give a concise output response, do not include this prompt.
+
+            This should be the output format:
+            {
+                "hard_labels": [(start, end), ...], # These items should exclusively be pairs of integers
+                "soft_labels": [{'start': int, 'end': int, 'prob': float}, ...], # These should correspond to the above pairs plus the corresponding probabilities
                 "marked_text": "text with <inconsistent>tagged parts</inconsistent>",
                 "explanation": "Explanation of inconsistencies"
-            }}
-            
-            Example responses given the inputs:
+            }
+
+            See example responses to given the inputs:
             1. Input:
                - Text: "All birds can fly."
                - Ground truth relations: "[('penguin', 'cannot', 'fly')]"
                - Relations extracted from text: "[('penguin', 'can', 'fly')]"
                Response:
-               {{
+               {
                    "hard_labels": [[4, 9]],
                    "soft_labels": [{'start': 4, 'end': 9, 'prob': 0.99}]
                    "marked_text": "All <inconsistent>birds</inconsistent> can fly.",
                    "explanation": "The text claims that all birds can fly, which is incorrect. Penguins, for example, cannot fly."
-               }}
-            
+               }
+
             2. Input:
                - Text: "Cats are reptiles."
                - Ground truth relations: "[('cats', 'are', 'mammals')]"
                - Relations extracted from text: "[('cats', 'are', 'reptiles')]"
                Response:
-               {{
+               {
                    "hard_labels": [[0, 4]],
                    "soft_labels": [{'start': 0, 'end': 4, 'prob': 1.0}]
                    "marked_text": "<inconsistent>Cats</inconsistent> are reptiles.",
                    "explanation": "The text incorrectly classifies cats as reptiles. Cats are mammals."
-               }}
-
+               }
+             Now this is an actual input and you must to give a response:
