@@ -9,7 +9,7 @@ import faiss
 import numpy as np
 from datasets import load_dataset
 
-# Forzar el uso de GPU 0 para evitar carga en RAM
+# Forzar uso de GPU 0
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 @dataclass
@@ -39,15 +39,17 @@ class SemanticProcessing:
         """
         self.device = device if torch.cuda.is_available() and device == "cuda" else "cpu"
         
-        # Optimización para uso eficiente de memoria en GPU
+        # Optimización para uso eficiente de memoria en GPU (8-bit quantization)
         bnb_config = BitsAndBytesConfig(load_in_8bit=True) if self.device == "cuda" else None
         
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             trust_remote_code=True,
-            quantization_config=bnb_config
-        ).to(self.device)
+            quantization_config=bnb_config,
+            attn_impl="flash",  # Reducir carga de memoria con Flash Attention
+            device_map="auto"  # 🔥 Forzar uso de GPU
+        )
 
         self.cohere_client = cohere.Client(cohere_api_key) if cohere_api_key else None
         
@@ -82,38 +84,6 @@ class SemanticProcessing:
 
           Response:"""
         return prompt
-
-    def _parse_model_output(self, output: str, original_text: str) -> VerificationResult:
-        try:
-            parts = output.split("\n\nInconsistencies found:")
-            marked_text = parts[0].strip()
-
-            inconsistencies = []
-            if len(parts) > 1:
-                explanations = parts[1].strip().split("\n")
-                for exp in explanations:
-                    if exp.strip():
-                        inconsistencies.append({
-                            "text": exp.split(": ")[0],
-                            "explanation": exp.split(": ")[1]
-                        })
-
-            confidence_score = max(0.0, min(1.0, 1.0 - (len(inconsistencies) * 0.1)))
-
-            return VerificationResult(
-                original_text=original_text,
-                marked_text=marked_text,
-                inconsistencies=inconsistencies,
-                confidence_score=confidence_score
-            )
-        except Exception as e:
-            logging.error(f"Error parsing model output: {e}")
-            return VerificationResult(
-                original_text=original_text,
-                marked_text=original_text,
-                inconsistencies=[],
-                confidence_score=0.0
-            )
 
     def verify_text(self, relations: List[SemanticRelation], text: str) -> VerificationResult:
         prompt = self._create_verification_prompt(relations, text)
@@ -150,6 +120,10 @@ index = faiss.read_index(index_path)  # Cargar desde disco
 
 # Prueba de verificación semántica
 if __name__ == "__main__":
+    # Limpiar procesos en RAM antes de iniciar
+    os.system("kill -9 $(pgrep -f python)")
+    torch.cuda.empty_cache()
+
     processor = SemanticProcessing(device="cuda", cohere_api_key="lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")
     relations = [
         SemanticRelation("Earth", "has diameter", "12,742 kilometers", 0.95, "doc1"),
@@ -160,6 +134,9 @@ if __name__ == "__main__":
     print("Marked text:", result.marked_text)
     print("Confidence Score:", result.confidence_score)
     print("Inconsistencies:", result.inconsistencies)
+
+
+
 
 ##############################################################################################################################
 ##############################################################################################################################
