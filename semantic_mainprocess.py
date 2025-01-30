@@ -10,7 +10,7 @@ from json_utils import JSONLIterator
 from wiki_sample import WikipediaBatchGenerator
 from pdb import set_trace as st
 
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+GEMINI_API_KEY = os.environ.get('AIzaSyCQ9MI51nyugYDqZqVZ5Q5bjEoV3532vDs')
 
 def extract_specific_json(text):
     """
