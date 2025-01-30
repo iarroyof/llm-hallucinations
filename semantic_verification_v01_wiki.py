@@ -3,7 +3,6 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from typing import List, Dict
 from dataclasses import dataclass
-import logging
 import cohere
 import faiss
 import numpy as np
@@ -28,7 +27,10 @@ class VerificationResult:
     confidence_score: float
 
 class SemanticProcessing:
-    def __init__(self, model_name: str = "mosaicml/mpt-7b-instruct", device: str = "cuda", cohere_api_key: str = None):
+    def __init__(self, 
+                 model_name: str = "mosaicml/mpt-7b-instruct", 
+                 device: str = "cuda", 
+                 cohere_api_key: str = None):
         """
         Initialize the semantic processing class.
 
@@ -37,23 +39,36 @@ class SemanticProcessing:
             device: Device to run the model on ('cuda' or 'cpu').
             cohere_api_key: API key for Cohere client (required for semantic search).
         """
+        # Verificar dispositivo
         self.device = device if torch.cuda.is_available() and device == "cuda" else "cpu"
-        
-        # Optimización para uso eficiente de memoria en GPU (8-bit quantization)
-        bnb_config = BitsAndBytesConfig(load_in_8bit=True) if self.device == "cuda" else None
-        
+
+        # Configuración para 4 bits (reducir memoria de VRAM)
+        # Requiere bitsandbytes>=0.37.0
+        bnb_config = None
+        if self.device == "cuda":
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.float16
+            )
+
+        # Cargar tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+        # Cargar modelo en 4 bits y forzar GPU con device_map="auto"
+        # Se quita attn_impl="flash" para reducir potenciales problemas de memoria
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             trust_remote_code=True,
             quantization_config=bnb_config,
-            attn_impl="flash",  # Reducir carga de memoria con Flash Attention
-            device_map="auto"  # 🔥 Forzar uso de GPU
+            device_map="auto"
         )
 
+        # Inicializar Cohere si hay API key
         self.cohere_client = cohere.Client(cohere_api_key) if cohere_api_key else None
         
-        # Liberar memoria de GPU antes de cargar el modelo de verificación
+        # Liberar memoria de GPU antes de proceder
         torch.cuda.empty_cache()
 
     def _format_relations(self, relations: List[SemanticRelation]) -> str:
@@ -65,34 +80,49 @@ class SemanticProcessing:
     def _create_verification_prompt(self, relations: List[SemanticRelation], text: str) -> str:
         relations_text = self._format_relations(relations)
         prompt = f"""
-          Task: Analyze the following text for semantic inconsistencies using the provided semantic relations.
+Task: Analyze the following text for semantic inconsistencies using the provided semantic relations.
 
-          {relations_text}
+{relations_text}
 
-          Text to verify:
-          {text}
+Text to verify:
+{text}
 
-          Instructions:
-          1. Compare the text against the semantic relations
-          2. Identify any inconsistencies or contradictions
-          3. Mark inconsistent segments with XML tags
-          4. Provide a brief explanation for each inconsistency
+Instructions:
+1. Compare the text against the semantic relations
+2. Identify any inconsistencies or contradictions
+3. Mark inconsistent segments with XML tags
+4. Provide a brief explanation for each inconsistency
 
-          Output format:
-          1. First provide the text with <inconsistency> tags around problematic segments
-          2. Then list each inconsistency with its explanation
+Output format:
+1. First provide the text with <inconsistency> tags around problematic segments
+2. Then list each inconsistency with its explanation
 
-          Response:"""
+Response:
+"""
         return prompt
+
+    def _parse_model_output(self, response: str, original_text: str) -> VerificationResult:
+        """
+        Implementa tu lógica de parseo aquí (no se muestra en el snippet original).
+        Como mínimo, retorna un VerificationResult con los campos adecuados.
+        """
+        # Simularemos un parseo simple para el ejemplo:
+        return VerificationResult(
+            original_text=original_text,
+            marked_text=response,   # Aquí tendrías que extraer el texto marcado
+            inconsistencies=[],
+            confidence_score=1.0    # Ajusta según tu lógica
+        )
 
     def verify_text(self, relations: List[SemanticRelation], text: str) -> VerificationResult:
         prompt = self._create_verification_prompt(relations, text)
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
         with torch.no_grad():
+            # Usar max_new_tokens en vez de max_length para limitar la generación
             outputs = self.model.generate(
                 inputs.input_ids,
-                max_length=1024,  # Reduce memory usage
+                max_new_tokens=128,
                 temperature=0.1,
                 top_p=0.95,
                 do_sample=True,
@@ -106,9 +136,13 @@ class SemanticProcessing:
         if not self.cohere_client:
             raise ValueError("Cohere client is not initialized. Provide a valid API key.")
 
-        query_emb = self.cohere_client.embed(texts=[query], model='multilingual-22-12').embeddings[0]
+        query_emb = self.cohere_client.embed(
+            texts=[query], 
+            model='multilingual-22-12'
+        ).embeddings[0]
         results = vector_database.search(query_emb, k)
         return results
+
 
 # Implementar FAISS con índice en disco
 index_path = "faiss_index.bin"
@@ -120,22 +154,29 @@ index = faiss.read_index(index_path)  # Cargar desde disco
 
 # Prueba de verificación semántica
 if __name__ == "__main__":
-    # Limpiar procesos en RAM antes de iniciar
-    os.system("kill -9 $(pgrep -f python)")
+    # ¡Ojo! Quitamos la línea que mataba procesos:
+    # os.system("kill -9 $(pgrep -f python)")
+
     torch.cuda.empty_cache()
 
-    processor = SemanticProcessing(device="cuda", cohere_api_key="lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")
+    processor = SemanticProcessing(
+        device="cuda", 
+        cohere_api_key="lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG"
+    )
+    
     relations = [
         SemanticRelation("Earth", "has diameter", "12,742 kilometers", 0.95, "doc1"),
         SemanticRelation("Earth", "orbits", "Sun", 0.98, "doc1")
     ]
-    text_to_verify = "The Earth, which has a diameter of about 10,000 kilometers, completes one orbit around the Sun every 365.25 days."
+    text_to_verify = (
+        "The Earth, which has a diameter of about 10,000 kilometers, "
+        "completes one orbit around the Sun every 365.25 days."
+    )
+
     result = processor.verify_text(relations, text_to_verify)
     print("Marked text:", result.marked_text)
     print("Confidence Score:", result.confidence_score)
     print("Inconsistencies:", result.inconsistencies)
-
-
 
 
 ##############################################################################################################################
