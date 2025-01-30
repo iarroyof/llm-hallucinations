@@ -2,11 +2,13 @@ from relation_extraction_v2 import RelationExtractor, extract_relations
 from semantic_verification_v04 import SemanticVerifier
 from json_utils import JSONLIterator
 from wiki_sample import WikipediaBatchGenerator
+from wikipedia_str_search import WikipediaSearch
 from pdb import set_trace as st
 import torch
 import json
 import re
 import os
+import time
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
@@ -46,18 +48,21 @@ def extract_specific_json(text):
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = ['model_input', 'model_output_text']
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model_name = 'deepseek-ai/deepseek-r1-distill-qwen-1.5b'
 # Simulate a list of documents from n questions (n_qs),
 # here, each question qi has associated a batch of m documents
 # n_qs_semantic_search_results = [m_documents_q0, m_documents_q1,..., m_documents_qn]
 # m_documents_qi = [doc0_from_wiki, doc1_from_wiki,..., docm_from_wiki]
-generator = WikipediaBatchGenerator()
-n_qs_semantic_search_results = generator.get_batches()
-n_qs = generator.len
+#generator = WikipediaBatchGenerator()
+#n_qs_semantic_search_results = generator.get_batches()
+searcher = WikipediaSearch(k=3)
+
+#n_qs = generator.len
 questions_answers = JSONLIterator(file_path, keys, n_qs)
 extractor = RelationExtractor()
 # Iterate over the file and process each item
+# Search and get background knowledge based on titles:
+n_qs_semantic_search_results = [searcher.get_background_knowledge(q) for q, _ in questions_answers]
+st()
 answers = [ans for _, ans in questions_answers]
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(
         answers,
@@ -65,15 +70,31 @@ wiki_docs_fquestion_relations, fanswer_relations = extract_relations(
         extractor)
 # Take wiki_docs_fquestion_relations and fanswer_relations and give them to the semantic verifier.
     # Initialize verifier
+if GEMINI_API_KEY in [None, '']:
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model_name = 'deepseek-ai/deepseek-r1-distill-qwen-1.5b'
+else:
+    device = None
+    model_name = None
+    
 verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI_API_KEY)
-
     # Run verification
 results = []
 # Adaptar este loop para que solo haga 150 requests por minuto a lo mucho, esperar a que inicie el siguiente minuto
-# y seguir haciendo requests. 
+# y seguir haciendo requests.
+i = 0
 for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relations,
                                                         fanswer_relations,
                                                         answers):
     result = verifier.verify_text(wiki_relations, answer_relations, answer)
-    print("Dictionary:")
-    print(result)
+    #print("Dictionary:")
+    results.append(result)
+    i += 1
+    if i % 15 == 0 and GEMINI_API_KEY not in [None, '']:
+        with open(file_path + '.results') as f:
+            for r in results:
+                f.write(r)
+                f.write('\n')
+        results = []
+        print("Pausing for one minute...")
+        time.sleep(60)  # Sleep for 60 seconds (1 minute)
