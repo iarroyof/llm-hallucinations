@@ -138,6 +138,7 @@ class SemanticProcessing:
 
 #! Prueba de verificación semántica
 if __name__ == "__main__":
+    torch.cuda.empty_cache()
     processor = SemanticProcessing(device="cuda", cohere_api_key="lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")
 
     relations = [
