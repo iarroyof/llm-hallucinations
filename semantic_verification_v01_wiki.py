@@ -1,3 +1,4 @@
+import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from typing import List, Dict
@@ -7,6 +8,9 @@ import cohere
 import faiss
 import numpy as np
 from datasets import load_dataset
+
+# Forzar el uso de GPU 0 para evitar carga en RAM
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 @dataclass
 class SemanticRelation:
@@ -136,11 +140,17 @@ class SemanticProcessing:
         results = vector_database.search(query_emb, k)
         return results
 
-#! Prueba de verificación semántica
-if __name__ == "__main__":
-    torch.cuda.empty_cache()
-    processor = SemanticProcessing(device="cuda", cohere_api_key="lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")
+# Implementar FAISS con índice en disco
+index_path = "faiss_index.bin"
+dimension = 768  # Tamaño de los embeddings
+if not os.path.exists(index_path):
+    index = faiss.IndexFlatL2(dimension)
+    faiss.write_index(index, index_path)  # Guardar en disco
+index = faiss.read_index(index_path)  # Cargar desde disco
 
+# Prueba de verificación semántica
+if __name__ == "__main__":
+    processor = SemanticProcessing(device="cuda", cohere_api_key="lWkdWMdYZdueoxBnzwPdEshuyWWEN1hYspCNyirG")
     relations = [
         SemanticRelation("Earth", "has diameter", "12,742 kilometers", 0.95, "doc1"),
         SemanticRelation("Earth", "orbits", "Sun", 0.98, "doc1")
@@ -150,18 +160,6 @@ if __name__ == "__main__":
     print("Marked text:", result.marked_text)
     print("Confidence Score:", result.confidence_score)
     print("Inconsistencies:", result.inconsistencies)
-
-    #! Prueba de búsqueda semántica con FAISS
-    dimension = 768
-    index = faiss.IndexFlatL2(dimension)
-    doc_embeddings = np.random.rand(100, dimension).astype('float32')
-    index.add(doc_embeddings)
-    index.documents = ["Document 1", "Document 2", "Document 3"]
-
-    query = "Who founded YouTube?"
-    search_results = processor.semantic_search(query, index, k=3)
-    print("Search Results:", search_results)
-
 
 ##############################################################################################################################
 ##############################################################################################################################
