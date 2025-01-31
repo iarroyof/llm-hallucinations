@@ -11,7 +11,7 @@ import os
 import time
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-
+RPM = 14
 def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dict):
     if GEMINI_API_KEY in [None, '']:
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -37,7 +37,7 @@ def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dic
         except Exception as e:
             print(f"Error writing to file: {e}")
     i += 1
-    if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
+    if i % RPM == 0 and GEMINI_API_KEY not in [None, '']:
         print("Pausing for one minute...")
         time.sleep(60)  # Sleep for 60 seconds (1 minute)
 
@@ -115,7 +115,7 @@ searcher = WikipediaSearch(k=3)
 results = []
 filename = file_path + ".results"
 i = 0
-rpm = 14
+
 
 if keys is None:
     for i, q in enumerate(questions_answers):
