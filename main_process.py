@@ -122,7 +122,7 @@ rpm = 14
 if keys is None:
     for i, q in enumerate(questions_answers):
         q_semantic_search_results = searcher.get_background_knowledge(q['model_input'])
-        answer = q['model_output_text']
+        answer = q['model_output_text']; st()
     verify_hallucins_and_save(i, q_semantic_search_results, answer)        
 else:        
     questions, answers = zip(*questions_answers)
