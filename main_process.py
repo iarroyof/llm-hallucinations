@@ -12,8 +12,6 @@ import time
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
-import json
-
 def parse_gemini_response(response):
     """Parses the 'text' field from a Gemini API response.
 
