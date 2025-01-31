@@ -12,6 +12,37 @@ import time
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
+def verify_hallucins_and_save(i, q_semantic_search_results, answer):
+    if GEMINI_API_KEY in [None, '']:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model_name = 'deepseek-ai/deepseek-r1-distill-qwen-1.5b'
+    else:
+        device = None
+        model_name = "gemini-1.5-flash"
+    verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI_API_KEY)
+    print(f"Working with {model_name} semantic verifier...")
+    wiki_relations, answer_relations = extract_relations(
+        [answer],
+        [q_semantic_search_results],
+        extractor)
+
+    result = verifier.verify_text(wiki_relations, answer_relations, answer)
+    result = parse_gemini_response(result)
+    if result:
+        results.append(result.update(result_data))
+    i += 1
+    if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
+        try:
+            with open(filename, "w" if i < rpm else 'a', encoding="utf-8") as f:  # Use UTF-8 encoding
+                for data_item in results:
+                    json.dump(data_item, f, ensure_ascii=False)
+                print(f"Data successfully written to {filename}")
+        except Exception as e:
+            print(f"Error writing to file: {e}")
+        results = []
+        print("Pausing for one minute...")
+        time.sleep(60)  # Sleep for 60 seconds (1 minute)
+
 def parse_gemini_response(response):
     """Parses the 'text' field from a Gemini API response.
 
@@ -83,57 +114,23 @@ extractor = RelationExtractor()
 # Iterate over the file and process each item
 # Search and get background knowledge based on titles:
 searcher = WikipediaSearch(k=3)
+results = []
+filename = file_path + ".results"
+i = 0
+rpm = 14
+
 if keys is None:
-    answers = []
-    n_qs_semantic_search_results = []
-    full_data = []
-    for q in questions_answers:
-        n_qs_semantic_search_results.append(
-            searcher.get_background_knowledge(q['model_input']))
-        answers.append(q['model_output_text'])
-        full_data.append(q)
+    for i, q in enumerate(questions_answers):
+        q_semantic_search_results = searcher.get_background_knowledge(q['model_input'])
+        answer = q['model_output_text']
+    verify_hallucins_and_save(i, q_semantic_search_results, answer)        
 else:        
     questions, answers = zip(*questions_answers)
     n_qs_semantic_search_results = [searcher.get_background_knowledge(q) for q in questions]
 
-wiki_docs_fquestion_relations, fanswer_relations = extract_relations(
-        answers,
-        n_qs_semantic_search_results,
-        extractor)
+
 # Take wiki_docs_fquestion_relations and fanswer_relations and give them to the semantic verifier.
     # Initialize verifier
-if GEMINI_API_KEY in [None, '']:
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_name = 'deepseek-ai/deepseek-r1-distill-qwen-1.5b'
-else:
-    device = None
-    model_name = "gemini-1.5-flash"
-print(f"Working with {model_name} semantic verifier...")
-verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI_API_KEY)
-    # Run verification
-results = []
-# Adaptar este loop para que solo haga 150 requests por minuto a lo mucho, esperar a que inicie el siguiente minuto
-# y seguir haciendo requests.
-filename = file_path + ".results"
-i = 0
-rpm = 14
-for wiki_relations, answer_relations, answer, result_data in zip(wiki_docs_fquestion_relations,
-                                                        fanswer_relations,
-                                                        answers, full_data):
-    result = verifier.verify_text(wiki_relations, answer_relations, answer)
-    result = parse_gemini_response(result)
-    if result:
-        results.append(result.update(result_data))
-    i += 1
-    #st()
-    if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
-        try:
-            with open(filename, "w" if i < rpm else 'a', encoding="utf-8") as f:  # Use UTF-8 encoding
-                for data_item in results:
-                    json.dump(data_item, f, ensure_ascii=False)
-                print(f"Data successfully written to {filename}")
-        except Exception as e:
-            print(f"Error writing to file: {e}")
-        results = []
-        print("Pausing for one minute...")
-        time.sleep(60)  # Sleep for 60 seconds (1 minute)
+#for wiki_relations, answer_relations, answer, result_data in zip(wiki_docs_fquestion_relations,
+#                                                        fanswer_relations,
+#                                                        answers, full_data):
