@@ -12,7 +12,7 @@ import time
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
-def verify_hallucins_and_save(i, q_semantic_search_results, answer):
+def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dict):
     if GEMINI_API_KEY in [None, '']:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model_name = 'deepseek-ai/deepseek-r1-distill-qwen-1.5b'
@@ -29,17 +29,15 @@ def verify_hallucins_and_save(i, q_semantic_search_results, answer):
     result = verifier.verify_text(wiki_relations, answer_relations, answer)
     result = parse_gemini_response(result)
     if result:
-        results.append(result.update(result_data))
-    i += 1
-    if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
+        result.update(original_dict)
         try:
-            with open(filename, "w" if i < rpm else 'a', encoding="utf-8") as f:  # Use UTF-8 encoding
-                for data_item in results:
-                    json.dump(data_item, f, ensure_ascii=False)
-                print(f"Data successfully written to {filename}")
+            with open(filename, "a" if i > 0 else "w", encoding="utf-8") as f:  # Use UTF-8 encoding
+                json.dump(data_item, f, ensure_ascii=False)
+            print(f"Data successfully written to {filename}")
         except Exception as e:
             print(f"Error writing to file: {e}")
-        results = []
+    i += 1
+    if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
         print("Pausing for one minute...")
         time.sleep(60)  # Sleep for 60 seconds (1 minute)
 
