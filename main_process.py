@@ -54,7 +54,7 @@ keys = ['model_input', 'model_output_text']
 # m_documents_qi = [doc0_from_wiki, doc1_from_wiki,..., docm_from_wiki]
 #generator = WikipediaBatchGenerator()
 #n_qs_semantic_search_results = generator.get_batches()
-questions_answers = JSONLIterator(file_path, keys)
+questions_answers = JSONLIterator(file_path, keys, 6)
 extractor = RelationExtractor()
 # Iterate over the file and process each item
 # Search and get background knowledge based on titles:
