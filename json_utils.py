@@ -1,7 +1,7 @@
 import json
 
 class JSONLIterator:
-    def __init__(self, file_path, keys, n_samples):
+    def __init__(self, file_path, keys, n_samples=None):
         """
         Initialize the JSONL iterator.
 
@@ -19,7 +19,10 @@ class JSONLIterator:
         """
         with open(self.file_path, 'r', encoding='utf-8') as file:
             for n, line in enumerate(file):
-                if n < self.n_samples:
+                if self.n_samples is None:
+                    data = json.loads(line.strip())
+                    yield tuple(data[key] for key in self.keys)
+                elif n < self.n_samples:
                     data = json.loads(line.strip())
                     yield tuple(data[key] for key in self.keys)
 
