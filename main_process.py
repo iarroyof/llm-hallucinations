@@ -78,7 +78,7 @@ keys = None # ['model_input', 'model_output_text']
 # m_documents_qi = [doc0_from_wiki, doc1_from_wiki,..., docm_from_wiki]
 #generator = WikipediaBatchGenerator()
 #n_qs_semantic_search_results = generator.get_batches()
-questions_answers = JSONLIterator(file_path=file_path, keys=keys, n_samples=7)
+questions_answers = JSONLIterator(file_path=file_path, keys=keys, n_samples=None)
 extractor = RelationExtractor()
 # Iterate over the file and process each item
 # Search and get background knowledge based on titles:
@@ -116,7 +116,7 @@ results = []
 # y seguir haciendo requests.
 filename = file_path + ".results"
 i = 0
-rpm = 15
+rpm = 14
 for wiki_relations, answer_relations, answer, result_data in zip(wiki_docs_fquestion_relations,
                                                         fanswer_relations,
                                                         answers, full_data):
@@ -129,7 +129,8 @@ for wiki_relations, answer_relations, answer, result_data in zip(wiki_docs_fques
     if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
         try:
             with open(filename, "w" if i < rpm else 'a', encoding="utf-8") as f:  # Use UTF-8 encoding
-                json.dump(results, f, indent=4, ensure_ascii=False) #indent for readability, ensure_ascii handles special characters
+                for data_item in results:
+                    json.dump(data_item, f, ensure_ascii=False)
                 print(f"Data successfully written to {filename}")
         except Exception as e:
             print(f"Error writing to file: {e}")
