@@ -23,35 +23,36 @@ def parse_gemini_response(response):
         'explanation', and 'marked_text'), or None if there's an error or
         the expected fields are not found.  Returns an empty dict if the json string is empty.
             
-    # Example usage (assuming you have the 'result' object):
-    extracted_data = parse_gemini_response(result)
+    # Example usage (assuming you have the 'response' object directly):
+    extracted_data = parse_gemini_response(response)  # Pass the response object
     
     if extracted_data:
         print(extracted_data)
-        hard_labels = extracted_data.get("hard_labels") #get avoids KeyError if key is absent
-        soft_labels = extracted_data.get("soft_labels")
-        explanation = extracted_data.get("explanation")
-        marked_text = extracted_data.get("marked_text")
-    
-        if hard_labels:
-            print("hard_labels:", hard_labels)
-        if soft_labels:
-            print("soft_labels:", soft_labels)
-        if explanation:
-            print("explanation:", explanation)
-        if marked_text:
-            print("marked_text:", marked_text)
+        # ... (rest of the example code remains the same)
     else:
         print("Failed to extract data from response.")
+
+    """
+import json
+
+def parse_gemini_response(response):
+    """Parses the 'text' field from a Gemini API response.
+
+    Args:
+        response: The Gemini API response object.
+
+    Returns:
+        A dictionary containing the extracted data, or None if there's an error
+        or the expected fields are not found. Returns an empty dict if the json string is empty.
     """
     try:
-        candidates = response.result.candidates
-        if candidates:  # Check if the candidates list is not empty
+        candidates = response.candidates  # Access candidates directly
+        if candidates:
             content_parts = candidates[0].content.parts
-            if content_parts: # Check if the parts list is not empty
+            if content_parts:
                 text_field = content_parts[0].text
                 if text_field:
-                    # Extract JSON string from the code block
+                     # Extract JSON string from the code block
                     json_string = text_field.strip().removeprefix("```json\n").removesuffix("\n```") #strip to remove whitespace and remove code block markers
                     if json_string:
                         try:
@@ -80,7 +81,6 @@ def parse_gemini_response(response):
     except AttributeError as e:
         print(f"Error: Invalid response structure. {e}")
         return None
-
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = ['model_input', 'model_output_text']
