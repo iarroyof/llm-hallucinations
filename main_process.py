@@ -85,7 +85,7 @@ for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relation
                                                         fanswer_relations,
                                                         answers):
     result = verifier.verify_text(wiki_relations, answer_relations, answer)
-    #print("Dictionary:")
+    st()
     results.append(result)
     i += 1
     if i % 15 == 0 and GEMINI_API_KEY not in [None, '']:
