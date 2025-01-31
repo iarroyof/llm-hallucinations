@@ -12,39 +12,77 @@ import time
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
-def extract_specific_json(text):
-    """
-    Extract specific JSON structure containing text_to_verify, inconsistency_identification,
-    and explanation from a larger text.
+import json
+
+def parse_gemini_response(response):
+    """Parses the 'text' field from a Gemini API response.
 
     Args:
-        text (str): Input text containing the JSON structure
+        response: The Gemini API response object (as shown in your example).
 
     Returns:
-        dict: Parsed JSON with the specific structure or None if not found
+        A dictionary containing the extracted data ('hard_labels', 'soft_labels',
+        'explanation', and 'marked_text'), or None if there's an error or
+        the expected fields are not found.  Returns an empty dict if the json string is empty.
+            
+    # Example usage (assuming you have the 'result' object):
+    extracted_data = parse_gemini_response(result)
+    
+    if extracted_data:
+        print(extracted_data)
+        hard_labels = extracted_data.get("hard_labels") #get avoids KeyError if key is absent
+        soft_labels = extracted_data.get("soft_labels")
+        explanation = extracted_data.get("explanation")
+        marked_text = extracted_data.get("marked_text")
+    
+        if hard_labels:
+            print("hard_labels:", hard_labels)
+        if soft_labels:
+            print("soft_labels:", soft_labels)
+        if explanation:
+            print("explanation:", explanation)
+        if marked_text:
+            print("marked_text:", marked_text)
+    else:
+        print("Failed to extract data from response.")
     """
     try:
-        # Pattern to match the specific JSON structure we want
-        pattern = r'\{\s*"text_to_verify":\s*"[^"]+",\s*"inconsistency_identification":\s*\{[^}]+\},\s*"explanation":\s*"[^"]+"\s*\}'
-
-        # Find the match
-        match = re.search(pattern, text)
-        if not match:
+        candidates = response.result.candidates
+        if candidates:  # Check if the candidates list is not empty
+            content_parts = candidates[0].content.parts
+            if content_parts: # Check if the parts list is not empty
+                text_field = content_parts[0].text
+                if text_field:
+                    # Extract JSON string from the code block
+                    json_string = text_field.strip().removeprefix("```json\n").removesuffix("\n```") #strip to remove whitespace and remove code block markers
+                    if json_string:
+                        try:
+                            data = json.loads(json_string)
+                            extracted_data = {
+                                "hard_labels": data.get("hard_labels"),
+                                "soft_labels": data.get("soft_labels"),
+                                "explanation": data.get("explanation"),
+                                "marked_text": data.get("marked_text"),
+                            }
+                            return extracted_data
+                        except json.JSONDecodeError:
+                            print("Error: Could not decode JSON string.")
+                            return None
+                    else:
+                        return {} #return empty dict if json string is empty
+                else:
+                    print("Error: 'text' field not found in response.")
+                    return None
+            else:
+                print("Error: 'parts' field not found in response.")
+                return None
+        else:
+            print("Error: 'candidates' list is empty in response.")
             return None
-
-        # Parse the JSON
-        json_str = match.group(0)
-        result = json.loads(json_str)
-
-        # Validate the structure
-        required_keys = {'text_to_verify', 'inconsistency_identification', 'explanation'}
-        if not all(key in result for key in required_keys):
-            return None
-
-        return result
-
-    except (json.JSONDecodeError, AttributeError) as e:
+    except AttributeError as e:
+        print(f"Error: Invalid response structure. {e}")
         return None
+
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = ['model_input', 'model_output_text']
@@ -91,8 +129,14 @@ for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relation
     if i % 15 == 0 and GEMINI_API_KEY not in [None, '']:
         with open(file_path + '.results', 'w') as f:
             for r in results:
-                f.write(r)
-                f.write('\n')
+                extracted_data = parse_gemini_response(result)
+                if extracted_data:
+                    jsonl_result = {
+                    'hard_labels': extracted_data.get("hard_labels"),
+                    'soft_labels': extracted_data.get("soft_labels")
+                    }
+                    f.write(jsonl_result)
+                    f.write('\n')
         results = []
         print("Pausing for one minute...")
         time.sleep(60)  # Sleep for 60 seconds (1 minute)
