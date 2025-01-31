@@ -33,18 +33,6 @@ def parse_gemini_response(response):
         print("Failed to extract data from response.")
 
     """
-import json
-
-def parse_gemini_response(response):
-    """Parses the 'text' field from a Gemini API response.
-
-    Args:
-        response: The Gemini API response object.
-
-    Returns:
-        A dictionary containing the extracted data, or None if there's an error
-        or the expected fields are not found. Returns an empty dict if the json string is empty.
-    """
     try:
         candidates = response.candidates  # Access candidates directly
         if candidates:
