@@ -125,6 +125,7 @@ for wiki_relations, answer_relations, answer, result_data in zip(wiki_docs_fques
     if result:
         results.append(result.update(result_data))
     i += 1
+    st()
     if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
         try:
             with open(filename, "w" if i < rpm else 'a', encoding="utf-8") as f:  # Use UTF-8 encoding
