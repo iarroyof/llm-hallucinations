@@ -19,13 +19,14 @@ def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dic
     else:
         device = None
         model_name = "gemini-1.5-flash"
+    
     verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI_API_KEY)
     print(f"Working with {model_name} semantic verifier...")
     wiki_relations, answer_relations = extract_relations(
         [answer],
         [q_semantic_search_results],
         extractor)
-
+    st()
     result = verifier.verify_text(wiki_relations, answer_relations, answer)
     result = parse_gemini_response(result)
     if result:
@@ -116,12 +117,11 @@ results = []
 filename = file_path + ".results"
 i = 0
 
-
 if keys is None:
     for i, q in enumerate(questions_answers):
         q_semantic_search_results = searcher.get_background_knowledge(q['model_input'])
-        answer = q['model_output_text']; st()
-    verify_hallucins_and_save(i, q_semantic_search_results, answer)        
+        answer = q['model_output_text']
+        verify_hallucins_and_save(i, q_semantic_search_results, answer, q)        
 else:        
     questions, answers = zip(*questions_answers)
     n_qs_semantic_search_results = [searcher.get_background_knowledge(q) for q in questions]
