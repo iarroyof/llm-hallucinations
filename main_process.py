@@ -70,7 +70,7 @@ def parse_gemini_response(response):
         print(f"Error: Invalid response structure. {e}")
         return None
 
-file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
+file_path = "v1/mushroom.en-tst.v1.jsonl" # 'train/mushroom.en-train_nolabel.v1.jsonl'
 keys = None # ['model_input', 'model_output_text']
 # Simulate a list of documents from n questions (n_qs),
 # here, each question qi has associated a batch of m documents
@@ -125,7 +125,7 @@ for wiki_relations, answer_relations, answer, result_data in zip(wiki_docs_fques
     if result:
         results.append(result.update(result_data))
     i += 1
-    st()
+    #st()
     if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
         try:
             with open(filename, "w" if i < rpm else 'a', encoding="utf-8") as f:  # Use UTF-8 encoding
