@@ -56,7 +56,7 @@ keys = ['model_input', 'model_output_text']
 #n_qs_semantic_search_results = generator.get_batches()
 searcher = WikipediaSearch(k=3)
 
-#n_qs = generator.len
+n_qs = 15
 questions_answers = JSONLIterator(file_path, keys, n_qs)
 extractor = RelationExtractor()
 # Iterate over the file and process each item
