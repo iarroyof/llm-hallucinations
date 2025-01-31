@@ -101,7 +101,7 @@ if keys is None:
     full_data = []
     for q in questions_answers:
         n_qs_semantic_search_results.append(
-            questions searcher.get_background_knowledge(q['model_input']))
+            searcher.get_background_knowledge(q['model_input']))
         answers.append(q['model_output_text'])
         full_data.append(q)
 else:        
