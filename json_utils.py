@@ -21,7 +21,10 @@ class JSONLIterator:
             for n, line in enumerate(file):
                 if self.n_samples is None:
                     data = json.loads(line.strip())
-                    yield tuple(data[key] for key in self.keys)
+                    if self.keys is None:
+                        yield data
+                    else
+                        yield tuple(data[key] for key in self.keys)
                 elif n < self.n_samples:
                     data = json.loads(line.strip())
                     yield tuple(data[key] for key in self.keys)
