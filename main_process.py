@@ -83,20 +83,30 @@ def parse_gemini_response(response):
         return None
 
 file_path = 'train/mushroom.en-train_nolabel.v1.jsonl'
-keys = ['model_input', 'model_output_text']
+keys = None # ['model_input', 'model_output_text']
 # Simulate a list of documents from n questions (n_qs),
 # here, each question qi has associated a batch of m documents
 # n_qs_semantic_search_results = [m_documents_q0, m_documents_q1,..., m_documents_qn]
 # m_documents_qi = [doc0_from_wiki, doc1_from_wiki,..., docm_from_wiki]
 #generator = WikipediaBatchGenerator()
 #n_qs_semantic_search_results = generator.get_batches()
-questions_answers = JSONLIterator(file_path, keys, 6)
+questions_answers = JSONLIterator(file_path, keys, 7)
 extractor = RelationExtractor()
 # Iterate over the file and process each item
 # Search and get background knowledge based on titles:
-questions, answers = zip(*questions_answers)
 searcher = WikipediaSearch(k=3)
-n_qs_semantic_search_results = [searcher.get_background_knowledge(q) for q in questions]
+if keys is None:
+    answers = []
+    n_qs_semantic_search_results = []
+    full_data = []
+    for q in questions_answers:
+        n_qs_semantic_search_results.append(
+            questions searcher.get_background_knowledge(q['model_input']))
+        answers.append(q['model_output_text'])
+        full_data.append(q)
+else:        
+    questions, answers = zip(*questions_answers)
+    n_qs_semantic_search_results = [searcher.get_background_knowledge(q) for q in questions]
 
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(
         answers,
@@ -117,12 +127,12 @@ results = []
 # Adaptar este loop para que solo haga 150 requests por minuto a lo mucho, esperar a que inicie el siguiente minuto
 # y seguir haciendo requests.
 i = 0
-for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relations,
+for wiki_relations, answer_relations, answer, result_data in zip(wiki_docs_fquestion_relations,
                                                         fanswer_relations,
-                                                        answers):
+                                                        answers, full_data):
     result = verifier.verify_text(wiki_relations, answer_relations, answer)
     st()
-    results.append(result)
+    results.append(result.update(result_data))
     i += 1
     if i % 15 == 0 and GEMINI_API_KEY not in [None, '']:
         with open(file_path + '.results', 'w') as f:
