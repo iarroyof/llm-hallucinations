@@ -114,25 +114,24 @@ verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI
 results = []
 # Adaptar este loop para que solo haga 150 requests por minuto a lo mucho, esperar a que inicie el siguiente minuto
 # y seguir haciendo requests.
+filename = file_path + ".results"
 i = 0
+rpm = 15
 for wiki_relations, answer_relations, answer, result_data in zip(wiki_docs_fquestion_relations,
                                                         fanswer_relations,
                                                         answers, full_data):
     result = verifier.verify_text(wiki_relations, answer_relations, answer)
-    st()
-    results.append(result.update(result_data))
+    result = parse_gemini_response(result)
+    if result:
+        results.append(result.update(result_data))
     i += 1
-    if i % 15 == 0 and GEMINI_API_KEY not in [None, '']:
-        with open(file_path + '.results', 'w') as f:
-            for r in results:
-                extracted_data = parse_gemini_response(result)
-                if extracted_data:
-                    jsonl_result = {
-                    'hard_labels': extracted_data.get("hard_labels"),
-                    'soft_labels': extracted_data.get("soft_labels")
-                    }
-                    f.write(jsonl_result)
-                    f.write('\n')
+    if i % rpm == 0 and GEMINI_API_KEY not in [None, '']:
+        try:
+            with open(filename, "w" if i < rpm else 'a', encoding="utf-8") as f:  # Use UTF-8 encoding
+                json.dump(results, f, indent=4, ensure_ascii=False) #indent for readability, ensure_ascii handles special characters
+                print(f"Data successfully written to {filename}")
+        except Exception as e:
+            print(f"Error writing to file: {e}")
         results = []
         print("Pausing for one minute...")
         time.sleep(60)  # Sleep for 60 seconds (1 minute)
