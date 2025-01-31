@@ -61,9 +61,9 @@ questions_answers = JSONLIterator(file_path, keys, n_qs)
 extractor = RelationExtractor()
 # Iterate over the file and process each item
 # Search and get background knowledge based on titles:
-n_qs_semantic_search_results = [searcher.get_background_knowledge(q) for q, _ in questions_answers]
-st()
-answers = [ans for _, ans in questions_answers]
+questions, answers = zip(*questions_answers)
+n_qs_semantic_search_results = [searcher.get_background_knowledge(q) for q in questions]
+
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(
         answers,
         n_qs_semantic_search_results,
