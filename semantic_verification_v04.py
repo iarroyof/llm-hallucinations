@@ -35,7 +35,7 @@ class SemanticVerifier:
         self.api_key = api_key
         if not api_key is None:
             genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel(model_name)
             return None
 
         self.device = device if torch.cuda.is_available() and device == "cuda" else "cpu"
