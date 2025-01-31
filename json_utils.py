@@ -23,7 +23,7 @@ class JSONLIterator:
                     data = json.loads(line.strip())
                     if self.keys is None:
                         yield data
-                    else
+                    else:
                         yield tuple(data[key] for key in self.keys)
                 elif n < self.n_samples:
                     data = json.loads(line.strip())
