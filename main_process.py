@@ -54,14 +54,12 @@ keys = ['model_input', 'model_output_text']
 # m_documents_qi = [doc0_from_wiki, doc1_from_wiki,..., docm_from_wiki]
 #generator = WikipediaBatchGenerator()
 #n_qs_semantic_search_results = generator.get_batches()
-searcher = WikipediaSearch(k=3)
-
-n_qs = 15
-questions_answers = JSONLIterator(file_path, keys, n_qs)
+questions_answers = JSONLIterator(file_path, keys)
 extractor = RelationExtractor()
 # Iterate over the file and process each item
 # Search and get background knowledge based on titles:
 questions, answers = zip(*questions_answers)
+searcher = WikipediaSearch(k=3)
 n_qs_semantic_search_results = [searcher.get_background_knowledge(q) for q in questions]
 
 wiki_docs_fquestion_relations, fanswer_relations = extract_relations(
@@ -75,8 +73,8 @@ if GEMINI_API_KEY in [None, '']:
     model_name = 'deepseek-ai/deepseek-r1-distill-qwen-1.5b'
 else:
     device = None
-    model_name = None
-    
+    model_name = "gemini-1.5-flash"
+print(f"Working with {model_name} semantic verifier...")
 verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI_API_KEY)
     # Run verification
 results = []
@@ -91,7 +89,7 @@ for wiki_relations, answer_relations, answer in zip(wiki_docs_fquestion_relation
     results.append(result)
     i += 1
     if i % 15 == 0 and GEMINI_API_KEY not in [None, '']:
-        with open(file_path + '.results') as f:
+        with open(file_path + '.results', 'w') as f:
             for r in results:
                 f.write(r)
                 f.write('\n')
