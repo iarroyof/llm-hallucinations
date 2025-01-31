@@ -1,7 +1,7 @@
 import json
 
 class JSONLIterator:
-    def __init__(self, file_path, keys, n_samples=None):
+    def __init__(self, file_path, keys=None, n_samples=None):
         """
         Initialize the JSONL iterator.
 
