@@ -71,7 +71,6 @@ class RelationExtractor:
         return False  # No empty lists found at any depth
 
     def extract_relations(self, texts):
-        st()
         results = {}
         for text in texts:
             doc = self.nlp(text)
@@ -82,8 +81,9 @@ class RelationExtractor:
     
             results[text] = "Infer relations from: " + text if self.is_empty_nested_list(relations) else relations 
         return results
-"""
-def extract_relations(answers, n_qs_semantic_search_results, extractor):
+
+def extract_relations_from_texts(answers, n_qs_semantic_search_results, extractor):
+    st()
     wiki_docs_fquestion_relations = []
     fanswer_relations = []
     for wiki_docs_from_question, answer in zip(n_qs_semantic_search_results, answers):
@@ -93,4 +93,3 @@ def extract_relations(answers, n_qs_semantic_search_results, extractor):
         fanswer_relations.append(relations)
 
     return wiki_docs_fquestion_relations, fanswer_relations
-"""
