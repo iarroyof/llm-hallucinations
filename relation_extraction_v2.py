@@ -47,6 +47,28 @@ class RelationExtractor:
                         relations.append((token.head.text, token.text, ent.text))
 
         return relations
+        
+    def is_empty_nested_list(self, data):
+        """Recursively checks if a list (or list of lists) is empty at any depth.
+    
+        Args:
+            data: The list (or nested list) to check.
+    
+        Returns:
+            True if the list is empty at any depth, False otherwise.
+        """
+    
+        if not isinstance(data, list):  # Base case: not a list (so not empty if not a list)
+            return False
+    
+        if not data:  # Check if the current list is empty
+            return True
+    
+        for item in data:  # Recursive step: check each item in the list
+            if is_empty_nested_list(item):  # If any sublist is empty, the whole thing is empty
+                return True
+    
+        return False  # No empty lists found at any depth
 
     def extract_relations(self, texts):
         results = {}
@@ -55,7 +77,8 @@ class RelationExtractor:
             relations = []
             for sentence in doc.sents:
                 relations.extend(self._extract_relations_from_sentence(sentence.text))
-            results[text] = relations
+
+            results[text] = "Infer relations from: " + text if is_empty_nested_list(relations) else relations 
         return results
 
 def extract_relations(answers, n_qs_semantic_search_results, extractor):
