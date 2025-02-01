@@ -13,6 +13,7 @@ import time
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 RPM = 14
 def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dict):
+    extractor = RelationExtractor()
     if GEMINI_API_KEY in [None, '']:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model_name = 'deepseek-ai/deepseek-r1-distill-qwen-1.5b'
@@ -22,11 +23,12 @@ def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dic
     
     verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI_API_KEY)
     print(f"Working with {model_name} semantic verifier...")
-    wiki_relations, answer_relations = extract_relations_from_texts(
-        [answer],
-        [q_semantic_search_results],
-        extractor)
-    
+    if not isinstance(q_semantic_search_results, list):
+        q_semantic_search_results = [q_semantic_search_results]
+    st()
+    wiki_relations = extractor.extract_relations(q_semantic_search_results)
+    answer_relations = extractor.extract_relations([answer])
+
     result = verifier.verify_text(wiki_relations, answer_relations, answer)
     result = parse_gemini_response(result)
     if result:
