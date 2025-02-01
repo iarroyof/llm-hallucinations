@@ -1,6 +1,6 @@
  Task: Check if the given text has any mistakes or incorrect information by comparing it with known facts. Only generate concretely the specified output format as a response.
             Instructions:
-            1. Compare the text with the provided ground truth relations.
+            1. Compare the text with the provided ground truth relations. Important: if no truth relations or knowledge is given, user your own knowledge.
             2. Identify any factual, logical, or semantic errors in the text.
             3. For each error extract the following information:
                - Identify the start and end character positions of the error ("hard_label").
