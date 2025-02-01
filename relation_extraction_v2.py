@@ -1,6 +1,6 @@
 import spacy
 from spacy.matcher import Matcher
-
+from pdb import set_trace as st
 class RelationExtractor:
     def __init__(self):
         self.nlp = spacy.load("en_core_web_sm")
