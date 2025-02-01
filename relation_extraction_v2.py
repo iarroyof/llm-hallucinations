@@ -71,13 +71,15 @@ class RelationExtractor:
         return False  # No empty lists found at any depth
 
     def extract_relations(self, texts):
+        st()
         results = {}
         for text in texts:
             doc = self.nlp(text)
             relations = []
             for sentence in doc.sents:
-                relations.extend(self._extract_relations_from_sentence(sentence.text))
-            st()
+                sent_rels = self._extract_relations_from_sentence(sentence.text)
+                relations.extend(sent_rels)
+    
             results[text] = "Infer relations from: " + text if self.is_empty_nested_list(relations) else relations 
         return results
 
