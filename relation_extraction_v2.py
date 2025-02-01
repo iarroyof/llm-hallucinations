@@ -74,7 +74,7 @@ class RelationExtractor:
         results = {}
         for text in texts:
             if text == 'No background knowledge for this query.':
-                results[text + " text,"] = "So infer background knowledge from your own."
+                results[text[:-1] + " text, "] = "So infer background knowledge from your own knowledge, AI chatbot."
                 continue
             doc = self.nlp(text)
             relations = []
