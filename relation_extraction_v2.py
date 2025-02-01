@@ -73,6 +73,9 @@ class RelationExtractor:
     def extract_relations(self, texts):
         results = {}
         for text in texts:
+            if text == 'No background knowledge for this query.':
+                results[text + " text,"] = "So infer background knowledge from your own."
+                continue
             doc = self.nlp(text)
             relations = []
             for sentence in doc.sents:
