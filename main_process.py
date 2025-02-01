@@ -1,4 +1,4 @@
-from relation_extraction_v2 import RelationExtractor, extract_relations
+from relation_extraction_v2 import RelationExtractor, extract_relations_from_texts
 from semantic_verification_v04 import SemanticVerifier
 from json_utils import JSONLIterator
 from wiki_sample import WikipediaBatchGenerator
@@ -22,11 +22,11 @@ def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dic
     
     verifier = SemanticVerifier(model_name=model_name, device=device, api_key=GEMINI_API_KEY)
     print(f"Working with {model_name} semantic verifier...")
-    wiki_relations, answer_relations = extract_relations(
+    wiki_relations, answer_relations = extract_relations_from_texts(
         [answer],
         [q_semantic_search_results],
         extractor)
-    st()
+    
     result = verifier.verify_text(wiki_relations, answer_relations, answer)
     result = parse_gemini_response(result)
     if result:
