@@ -35,7 +35,7 @@ def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dic
         result.update(original_dict)
         try:
             with open(filename, "a" if i > 0 else "w", encoding="utf-8") as f:  # Use UTF-8 encoding
-                json.dump(data_item, f, ensure_ascii=False)
+                json.dump(result, f, ensure_ascii=False)
             print(f"Data successfully written to {filename}")
         except Exception as e:
             print(f"Error writing to file: {e}")
