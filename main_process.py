@@ -39,7 +39,7 @@ def verify_hallucins_and_save(i, q_semantic_search_results, answer, original_dic
             print(f"Data successfully written to {filename}")
         except Exception as e:
             print(f"Error writing to file: {e}")
-            
+    st()        
     if i % RPM == 0 and GEMINI_API_KEY not in [None, '']:
         print("Pausing for one minute...")
         time.sleep(60)  # Sleep for 60 seconds (1 minute)
