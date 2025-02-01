@@ -65,7 +65,7 @@ class RelationExtractor:
             return True
     
         for item in data:  # Recursive step: check each item in the list
-            if is_empty_nested_list(item):  # If any sublist is empty, the whole thing is empty
+            if self.is_empty_nested_list(item):  # If any sublist is empty, the whole thing is empty
                 return True
     
         return False  # No empty lists found at any depth
